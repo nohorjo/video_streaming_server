@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Video Streaming Server</title>
+      <link rel="stylesheet" href="style.css">
+      <script src="http://muhammedhaque.co.uk/pages/data-api.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    </head>
+    <body onkeydown="handleOnKeyDown(event)">
+      <div id="app">
+        <video
+          v-bind:src="src"
+          controls
+          autofocus
+          playsinline
+          autoplay
+          loop
+        >
+          <track
+            label="Track 1 - [English]"
+            kind="subtitles"
+            srclang="en"
+            v-bind:src="src + '.vtt'"
+            default
+          />
+        </video>
+      </div>
+      <script>
+        const videoEl = () => document.querySelector('video');
+
+        const app = new Vue({
+          el: '#app',
+          data: {
+            src: location.hash.slice(1),
+          },
+          mounted: () => {
+            videoEl().addEventListener("loadedmetadata", () => {
+              Data.get('videoTime/' + encodeURIComponent(location.hash))
+                .then(r => {
+                  videoEl().currentTime = (r || 0) * videoEl().duration;
+                });
+            });
+            let updateTimeout;
+            videoEl().addEventListener("timeupdate", () => {
+              if (!updateTimeout) {
+                updateTimeout = setTimeout(() => updateTimeout = 0, 10000);
+                Data.set('videoTime/' + encodeURIComponent(location.hash), videoEl().currentTime / videoEl().duration);
+              }
+            });
+          },
+        });
+
+        function handleOnKeyDown(event) {
+          let preventDefault = true;
+          switch(event.key) {
+            case 'ArrowLeft':
+              videoEl().currentTime -= 10;
+              break;
+            case 'ArrowRight':
+              videoEl().currentTime += 10;
+              break;
+            case '0':
+              videoEl().currentTime = 0;
+              break;
+            case 'm':
+              videoEl().muted = !videoEl().muted;
+              break;
+            case 'f':
+              if (document.fullscreenElement) {
+                document.exitFullscreen();
+              } else {
+                videoEl().requestFullscreen();
+              }
+              break;
+            default:
+              console.log(event.key);
+              preventDefault = false;
+              break;
+          }
+          if (preventDefault) event.preventDefault();
+        }
+
+      </script>
+    </body>
+  </html>

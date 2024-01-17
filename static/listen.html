@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Video Streaming Server</title>
+      <link rel="stylesheet" href="style.css">
+      <script src="http://muhammedhaque.co.uk/pages/data-api.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    </head>
+    <body onkeydown="handleOnKeyDown(event)">
+      <div id="app">
+        <video
+          onclick="togglePlayback()"
+          src="_audio_backgrounds/all.mp4"
+          playsinline
+          autoplay
+          loop
+        ></video>
+        <div class="overlaybutton back" onclick="audioEl().currentTime -= 5"></div>
+        <div class="overlaybutton forward" onclick="audioEl().currentTime += 5"></div>
+        <audio
+          controls
+          v-bind:src="src"
+          autofocus
+          autoplay
+          loop
+        ></audio>
+      </div>
+      <script>
+        const audioEl = () => document.querySelector('audio');
+        const videoEl = () => document.querySelector('video');
+
+        const app = new Vue({
+          el: '#app',
+          data: {
+            src: location.hash.slice(1),
+          },
+          mounted: () => {
+            videoEl().addEventListener("loadedmetadata", () => {
+              randomSeekVideo();
+              setInterval(randomSeekVideo, 10_000);
+            });
+            audioEl().addEventListener("loadedmetadata", () => {
+              Data.get('videoTime/' + encodeURIComponent(location.hash))
+                .then(r => {
+                  audioEl().currentTime = (r || 0) * audioEl().duration;
+                });
+            });
+            let updateTimeout;
+            audioEl().addEventListener("timeupdate", () => {
+              if (!updateTimeout) {
+                updateTimeout = setTimeout(() => updateTimeout = 0, 10000);
+                Data.set('videoTime/' + encodeURIComponent(location.hash), audioEl().currentTime / audioEl().duration);
+              }
+            });
+            audioEl().addEventListener("pause", () => {
+              videoEl().pause();
+            });
+            audioEl().addEventListener("play", () => {
+              videoEl().play();
+            });
+            audioEl().addEventListener("seeked", () => {
+              randomSeekVideo();
+            });
+          },
+        });
+
+        function handleOnKeyDown(event) {
+          let preventDefault = true;
+          switch(event.key) {
+            case 'ArrowLeft':
+              audioEl().currentTime -= 10;
+              break;
+            case 'ArrowRight':
+              audioEl().currentTime += 10;
+              break;
+            case '0':
+              audioEl().currentTime = 0;
+              break;
+            case 'm':
+              audioEl().muted = !audioEl().muted;
+              break;
+            case 'f':
+              if (document.fullscreenElement) {
+                document.exitFullscreen();
+              } else {
+                audioEl().parentElement.requestFullscreen();
+              }
+              break;
+            case ' ':
+              togglePlayback();
+              break;
+            default:
+              console.log(event.key);
+              preventDefault = false;
+              break;
+          }
+          if (preventDefault) event.preventDefault();
+        }
+
+        function togglePlayback() {
+          audioEl()[audioEl().paused ? 'play' : 'pause']();
+        }
+        function randomSeekVideo() {
+          videoEl().currentTime = videoEl().duration * Math.random();
+        }
+      </script>
+    </body>
+  </html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Video Streaming Server</title>
+      <link rel="stylesheet" href="style.css">
+      <script src="http://muhammedhaque.co.uk/pages/data-api.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    </head>
+    <body>
+      <div id="app">
+        <a
+          v-if="true" v-for="l in listings"
+          v-bind:href="getLink(l)"
+          class="listing"
+          v-bind:class="[l.type]"
+        >
+          <img
+            v-bind:src="getThumbnail(l)"
+            onerror="this.onerror=null;this.src='play.png';this.style.objectFit='contain';"
+            v-bind:class="[l.type]"
+          >
+          <span>
+            {{l.type === 'D' ? l.name : l.name.slice(0, -4)}}
+          </span>
+          <div
+            class="progress"
+            v-bind:style="{ width: l.progress + '%'}"
+          ></div>
+        </a>
+      </div>
+      <script>
+        const app = new Vue({
+          el: '#app',
+          data: {
+            listings: [],
+          },
+          methods: {
+            getLink: listing => {
+              const hash = ((location.hash || '#') + '/' + listing.name).replace(/\/\//g, '/');
+              switch (listing.type) {
+                case 'D':
+                  return hash;
+                case 'V':
+                  return '/watch' + hash;
+                case 'A':
+                  return '/listen' + hash;
+              }
+            },
+            getThumbnail: listing => {
+              switch (listing.type) {
+                case 'D':
+                case 'V':
+                  return (location.hash.slice(1) + '/' + listing.name + '.png').replace(/\/\//g, '/');
+                case 'A':
+                  return 'audio.png';
+              }
+            }
+          },
+        });
+
+        function getListings() {
+          Data.get('videoTime').then(r => {
+            const progress = {};
+            for (const t in r) {
+              progress[decodeURIComponent(decodeURIComponent(t)).slice(2)] = r[t];
+            }
+            fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
+              app.listings = listings.map(l => ({
+                ...l,
+                progress: (progress[decodeURIComponent(location.hash).slice(2) + '/' + l.name] * 100) || 0,
+              })).sort((a, b) => multiSort(
+                // dirs on top
+                +(b.type === 'D') - (a.type === 'D'),
+                // finished on bottom
+                +(a.progress > 98) - (b.progress > 98),
+                // opened on top
+                +(b.progress > 0) - (a.progress > 0),
+                // by name
+                a.name.localeCompare(b.name),
+              ));
+            });
+          });
+        }
+        getListings();
+        window.addEventListener("hashchange", getListings);
+
+        function multiSort(...vs) {
+          return vs.find(v => v) || 0;
+        }
+      </script>
+    </body>
+  </html>
