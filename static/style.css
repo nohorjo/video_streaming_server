@@ -88,6 +88,13 @@ audio {
   position: absolute;
   bottom: 0;
 }
+.close-button {
+  position: absolute;
+  font-size: 4rem;
+  opacity: 0.5;
+  top: 0;
+  right: 0;
+}
 .overlaybutton {
   position: absolute;
   top: 0;

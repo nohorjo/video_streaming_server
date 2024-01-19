@@ -28,6 +28,10 @@
           autoplay
           loop
         ></audio>
+        <span
+          class="close-button"
+          onclick="videoEl().remove()"
+        >&times;</span>
       </div>
       <script>
         const audioEl = () => document.querySelector('audio');
