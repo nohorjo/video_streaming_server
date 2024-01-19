@@ -11,6 +11,10 @@
     </head>
     <body>
       <div id="app">
+        <div class="crumbs">
+          <a href="#">..</a>
+          <span v-for="c in pathParts"> / <a v-bind:href="'#/' + c.path">{{c.name}}</a></span>
+        </div>
         <a
           v-if="true" v-for="l in listings"
           v-bind:href="getLink(l)"
@@ -36,6 +40,7 @@
           el: '#app',
           data: {
             listings: [],
+            pathParts: [],
           },
           methods: {
             getLink: listing => {
@@ -57,7 +62,7 @@
                 case 'A':
                   return 'audio.png';
               }
-            }
+            },
           },
         });
 
@@ -83,6 +88,13 @@
               ));
             });
           });
+          app.pathParts = location.hash
+                            .split('/')
+                            .filter(p => p && p !== '#')
+                            .map((p, i, arr) => ({
+                                name: decodeURIComponent(p),
+                                path: arr.slice(0, i + 1).join('/')
+                            }));
         }
         getListings();
         window.addEventListener("hashchange", getListings);

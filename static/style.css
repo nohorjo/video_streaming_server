@@ -17,6 +17,13 @@ body {
 }
 
 
+.crumbs {
+  width: 100%;
+  margin: 0 0 3rem 5rem;
+}
+.crumbs a {
+  color: inherit;
+}
 .listing {
   box-shadow: -1px 4px 10px 3px rgb(95 95 95 / 82%);
   display: flex;
