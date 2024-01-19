@@ -13,6 +13,7 @@
       <div id="app">
         <video
           onclick="togglePlayback()"
+          ondblclick="toggleFullScreen()"
           src="_audio_backgrounds/all.mp4"
           playsinline
           autoplay
@@ -83,11 +84,7 @@
               audioEl().muted = !audioEl().muted;
               break;
             case 'f':
-              if (document.fullscreenElement) {
-                document.exitFullscreen();
-              } else {
-                audioEl().parentElement.requestFullscreen();
-              }
+              toggleFullScreen();
               break;
             case ' ':
               togglePlayback();
@@ -102,6 +99,13 @@
 
         function togglePlayback() {
           audioEl()[audioEl().paused ? 'play' : 'pause']();
+        }
+        function toggleFullScreen() {
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          } else {
+            audioEl().parentElement.requestFullscreen();
+          }
         }
         function randomSeekVideo() {
           videoEl().currentTime = videoEl().duration * Math.random();
