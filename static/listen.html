@@ -11,6 +11,7 @@
     </head>
     <body onkeydown="handleOnKeyDown(event)">
       <div id="app">
+        {{decodeURIComponent(src.split('/').reverse()[0]).replace(/\.\w+$/, '')}}
         <video
           onclick="togglePlayback()"
           ondblclick="toggleFullScreen()"
