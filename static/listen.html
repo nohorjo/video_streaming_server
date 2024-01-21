@@ -29,7 +29,7 @@
         ></audio>
         <span
           class="close-button"
-          onclick="videoEl().remove()"
+          onclick="videoEl().remove(); this.remove(); audioEl().style.bottom='60%'"
         >&times;</span>
       </div>
       <script>
