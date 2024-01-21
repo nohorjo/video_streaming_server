@@ -107,3 +107,11 @@ audio {
 .overlaybutton.forward {
   right: 0;
 }
+.name-title {
+  z-index: 1;
+  padding: 0.5rem;
+  background: #01714fe0;
+  font-weight: bold;
+  border-radius: 5px;
+  font-size: 2rem;
+}

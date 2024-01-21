@@ -11,7 +11,6 @@
     </head>
     <body onkeydown="handleOnKeyDown(event)">
       <div id="app">
-        {{decodeURIComponent(src.split('/').reverse()[0]).replace(/\.\w+$/, '')}}
         <video
           onclick="togglePlayback()"
           ondblclick="toggleFullScreen()"
@@ -32,6 +31,7 @@
           class="close-button"
           onclick="videoEl().remove(); this.remove(); audioEl().style.bottom='60%'"
         >&times;</span>
+        <span class="name-title">{{name}}</span>
       </div>
       <script>
         const audioEl = () => document.querySelector('audio');
@@ -41,6 +41,7 @@
           el: '#app',
           data: {
             src: location.hash.slice(1),
+            name: decodeURIComponent(location.hash.split('/').reverse()[0]).replace(/\.\w+$/, ''),
           },
           mounted: () => {
             videoEl().addEventListener("loadedmetadata", () => {
