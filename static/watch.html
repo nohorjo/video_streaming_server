@@ -13,6 +13,7 @@
       <div id="app">
         <video
           v-bind:src="src"
+          v-bind:class="{overscan: isTV}"
           controls
           autofocus
           playsinline
@@ -35,6 +36,7 @@
           el: '#app',
           data: {
             src: location.hash.slice(1),
+            isTV: navigator.userAgent.includes('Silk'),
           },
           mounted: () => {
             videoEl().addEventListener("loadedmetadata", () => {

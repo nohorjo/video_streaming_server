@@ -24,6 +24,7 @@
         <audio
           controls
           v-bind:src="src"
+          v-bind:class="{overscan: isTV}"
           autofocus
           autoplay
         ></audio>
@@ -42,6 +43,7 @@
           data: {
             src: location.hash.slice(1),
             name: decodeURIComponent(location.hash.split('/').reverse()[0]).replace(/\.\w+$/, ''),
+            isTV: navigator.userAgent.includes('Silk'),
           },
           mounted: () => {
             videoEl().addEventListener("loadedmetadata", () => {
