@@ -58,11 +58,12 @@
             audioEl().addEventListener("timeupdate", () => {
               if (!updateTimeout) {
                 updateTimeout = setTimeout(() => updateTimeout = 0, 10000);
-                Data.set('videoTime/' + encodeURIComponent(location.hash), audioEl().currentTime / audioEl().duration);
+                updateTimeRemote();
               }
             });
             audioEl().addEventListener("pause", () => {
               videoEl().pause();
+              updateTimeRemote();
             });
             audioEl().addEventListener("play", () => {
               videoEl().play();
@@ -114,6 +115,9 @@
         }
         function randomSeekVideo() {
           videoEl().currentTime = videoEl().duration * Math.random();
+        }
+        function updateTimeRemote() {
+          Data.set('videoTime/' + encodeURIComponent(location.hash), audioEl().currentTime / audioEl().duration);
         }
       </script>
     </body>
