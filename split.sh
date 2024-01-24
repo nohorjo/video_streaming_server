@@ -8,7 +8,7 @@ for time in "$@"
 do
   if ! [[ -z "$2" ]]
   then
-    to="-t $2"
+    to="-to $2"
   else
     to=""
   fi
