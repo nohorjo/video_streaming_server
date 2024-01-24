@@ -10,7 +10,7 @@
       <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     </head>
     <body onkeydown="handleOnKeyDown(event)">
-      <div id="app">
+      <div id="app" onmousemove="handleMouseMove()">
         <video
           onclick="togglePlayback()"
           ondblclick="toggleFullScreen()"
@@ -120,6 +120,13 @@
         }
         function updateTimeRemote() {
           Data.set('videoTime/' + encodeURIComponent(location.hash), audioEl().currentTime / audioEl().duration);
+        }
+        let hoverTimeout;
+        function handleMouseMove() {
+          clearTimeout(hoverTimeout);
+          const el = document.getElementById('app');
+          el.classList.add('hovering');
+          hoverTimeout = setTimeout(() => el.classList.remove('hovering'), 7000);
         }
       </script>
     </body>

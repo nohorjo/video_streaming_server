@@ -15,7 +15,10 @@ body {
   flex-wrap: wrap;
   justify-content: center;
 }
-
+#app:fullscreen:not(.hovering) audio,
+#app:fullscreen:not(.hovering) .name-title {
+  display: none;
+}
 .crumbs {
   width: 100%;
   margin: 0 0 3rem 5rem;
