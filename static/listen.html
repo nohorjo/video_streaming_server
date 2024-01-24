@@ -14,7 +14,7 @@
         <video
           onclick="togglePlayback()"
           ondblclick="toggleFullScreen()"
-          src="_audio_backgrounds/all.mp4"
+          src="_audio_backgrounds/background.webm"
           playsinline
           autoplay
           loop
@@ -48,7 +48,7 @@
           mounted: () => {
             videoEl().addEventListener("loadedmetadata", () => {
               randomSeekVideo();
-              setInterval(randomSeekVideo, 10_000);
+              setInterval(randomSeekVideo, 15_000);
             });
             audioEl().addEventListener("loadedmetadata", () => {
               Data.get('videoTime/' + encodeURIComponent(location.hash))
