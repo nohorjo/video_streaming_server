@@ -3,7 +3,7 @@ const { createReadStream, promises: fs }  = require("fs");
 const mime = require('mime-types');
 
 const AUDIO_EXTS = ['mp3'];
-const VIDEO_EXTS = ['mkv', 'mp4'];
+const VIDEO_EXTS = ['mkv', 'mp4', 'webm'];
 
 const EXTS = [...AUDIO_EXTS, ...VIDEO_EXTS];
 
