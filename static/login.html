@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Streaming Server</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="http://muhammedhaque.co.uk/pages/data-api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  </head>
+  <body>
+    <div id="app">
+      <input
+        placeholder="username"
+        v-model="user"
+        v-on:keyup.enter="login(user)"
+      >
+      <button v-on:click="login(user)">Login</button>
+      <div class="users-list">
+        <div
+          v-for="user in users"
+          v-bind:style="{background: hashColour(user)}"
+          v-on:click="login(user)"
+        >{{user}}</div>
+      </div>
+    </div>
+    <script>
+      localStorage.removeItem('user');
+
+      const app = new Vue({
+        el: '#app',
+        data: {
+          users: [],
+          user: '',
+        },
+        methods: {
+          login: user => {
+            localStorage.setItem('user', user);
+            location.pathname = '/';
+          },
+        },
+      });
+
+      Data.get('videoTime', true).then(r => app.users = r.sort());
+
+      function hashColour(str) {
+        const seed = 7;
+        let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+        for (let i = 0, ch; i < str.length; i++) {
+            ch = str.charCodeAt(i);
+            h1 = Math.imul(h1 ^ ch, 2654435761);
+            h2 = Math.imul(h2 ^ ch, 1597334677);
+        }
+        h1  = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+        h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+        h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      
+        const hash = 4294967296 * (2097151 & h2) + (h1 >>> 0);
+        let colourString = (hash % 16777215).toString(16) + '88';
+        while (colourString.length < 8) colourString = '0' + colourString;
+        return '#' + colourString;
+    }
+    </script>
+  </body>
+</html>
