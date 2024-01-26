@@ -32,7 +32,7 @@
           class="close-button"
           onclick="videoEl().remove(); this.remove(); audioEl().style.bottom='60%'"
         >&times;</span>
-        <span class="name-title">{{name}}</span>
+        <span class="name-title" onclick="audioEl()[audioEl().paused ? 'play' : 'pause']()">{{name}}</span>
       </div>
       <script>
         const user = localStorage.getItem('user');
