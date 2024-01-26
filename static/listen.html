@@ -68,10 +68,10 @@
                 updateTimeRemote();
               }
             });
-            audioEl().addEventListener("pause", () => {
-              videoEl().pause();
+            [ 'pause', 'ended' ].forEach(e => audioEl().addEventListener(e, () => {
               updateTimeRemote();
-            });
+              videoEl().pause();
+            }));
             audioEl().addEventListener("play", () => {
               videoEl().play();
             });
