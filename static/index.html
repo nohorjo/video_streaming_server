@@ -75,11 +75,12 @@
         });
 
         function getListings() {
+          const progress = {};
           Data.get('videoTime/' + user).then(r => {
-            const progress = {};
             for (const t in r) {
               progress[decodeURIComponent(decodeURIComponent(t)).slice(2)] = r[t];
             }
+          }).finally(() => {
             fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
               app.listings = listings.map(l => ({
                 ...l,
