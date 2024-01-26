@@ -11,6 +11,8 @@
     </head>
     <body>
       <div id="app">
+        <h1>Hello {{user}}</h1>
+        <a href="/login">logout</a>
         <div class="crumbs">
           <a href="#">..</a>
           <span v-for="c in pathParts"> / <a v-bind:href="'#/' + c.path">{{c.name}}</a></span>
@@ -36,11 +38,17 @@
         </a>
       </div>
       <script>
+        const user = localStorage.getItem('user');
+        if (!user) {
+          location.pathname = '/login';
+        }
+
         const app = new Vue({
           el: '#app',
           data: {
             listings: [],
             pathParts: [],
+            user,
           },
           methods: {
             getLink: listing => {
@@ -67,7 +75,7 @@
         });
 
         function getListings() {
-          Data.get('videoTime').then(r => {
+          Data.get('videoTime/' + user).then(r => {
             const progress = {};
             for (const t in r) {
               progress[decodeURIComponent(decodeURIComponent(t)).slice(2)] = r[t];

@@ -30,6 +30,11 @@
         </video>
       </div>
       <script>
+        const user = localStorage.getItem('user');
+        if (!user) {
+          location.pathname = '/login';
+        }
+
         const videoEl = () => document.querySelector('video');
 
         const app = new Vue({
@@ -40,7 +45,7 @@
           },
           mounted: () => {
             videoEl().addEventListener("loadedmetadata", () => {
-              Data.get('videoTime/' + encodeURIComponent(location.hash))
+              Data.get('videoTime/' + user + '/' + encodeURIComponent(location.hash))
                 .then(r => {
                   videoEl().currentTime = (r || 0) * videoEl().duration;
                 });
@@ -88,7 +93,7 @@
           if (preventDefault) event.preventDefault();
         }
         function updateTimeRemote() {
-          Data.set('videoTime/' + encodeURIComponent(location.hash), videoEl().currentTime / videoEl().duration);
+          Data.set('videoTime/' + user + '/' + encodeURIComponent(location.hash), videoEl().currentTime / videoEl().duration);
         }
 
       </script>

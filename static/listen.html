@@ -35,6 +35,11 @@
         <span class="name-title">{{name}}</span>
       </div>
       <script>
+        const user = localStorage.getItem('user');
+        if (!user) {
+          location.pathname = '/login';
+        }
+
         const audioEl = () => document.querySelector('audio');
         const videoEl = () => document.querySelector('video');
 
@@ -51,7 +56,7 @@
               setInterval(randomSeekVideo, 15_000);
             });
             audioEl().addEventListener("loadedmetadata", () => {
-              Data.get('videoTime/' + encodeURIComponent(location.hash))
+              Data.get('videoTime/' + user + '/' + encodeURIComponent(location.hash))
                 .then(r => {
                   audioEl().currentTime = (r || 0) * audioEl().duration;
                 });
@@ -119,7 +124,7 @@
           videoEl().currentTime = videoEl().duration * Math.random();
         }
         function updateTimeRemote() {
-          Data.set('videoTime/' + encodeURIComponent(location.hash), audioEl().currentTime / audioEl().duration);
+          Data.set('videoTime/' + user + '/' + encodeURIComponent(location.hash), audioEl().currentTime / audioEl().duration);
         }
         let hoverTimeout;
         function handleMouseMove() {
