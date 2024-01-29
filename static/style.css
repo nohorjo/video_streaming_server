@@ -15,8 +15,10 @@ body {
   flex-wrap: wrap;
   justify-content: center;
 }
-#app:fullscreen:not(.hovering) audio,
-#app:fullscreen:not(.hovering) .name-title {
+#app:fullscreen:not(.hovering) {
+  cursor: none;
+}
+#app:fullscreen:not(.hovering) :not(video, .overlaybutton) {
   display: none;
 }
 .crumbs {
