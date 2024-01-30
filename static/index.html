@@ -29,7 +29,7 @@
             v-bind:class="[l.type]"
           >
           <span>
-            {{l.type === 'D' ? l.name : l.name.slice(0, -4)}}
+            {{l.type === 'D' ? l.name : l.name.replace(/\..+$/, '')}}
           </span>
           <div
             class="progress"
