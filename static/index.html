@@ -17,9 +17,10 @@
           <a href="#">..</a>
           <span v-for="c in pathParts"> / <a v-bind:href="'#/' + c.path">{{c.name}}</a></span>
         </div>
-        <a
-          v-if="true" v-for="l in listings"
-          v-bind:href="getLink(l)"
+        <div
+          v-if="!isAudioOfVideo(l)"
+          v-for="l in listings"
+          v-on:click="openListing(l)"
           class="listing"
           v-bind:class="[l.type]"
         >
@@ -29,13 +30,18 @@
             v-bind:class="[l.type]"
           >
           <span>
-            {{l.type === 'D' ? l.name : l.name.replace(/\..+$/, '')}}
+            {{l.type === 'D' ? l.name : l.name.replace(/\.[^.]+$/, '')}}
           </span>
+          <button
+            v-if="hasAudioOnly(l)"
+            v-on:click="openListing(l, true); event.stopPropagation()"
+            class="audio-only-button"
+          >Audio only</button>
           <div
             class="progress"
             v-bind:style="{ width: l.progress + '%'}"
           ></div>
-        </a>
+        </div>
       </div>
       <script>
         const user = localStorage.getItem('user');
@@ -51,16 +57,22 @@
             user,
           },
           methods: {
-            getLink: listing => {
-              const hash = ((location.hash || '#') + '/' + listing.name).replace(/\/\//g, '/');
+            openListing: (listing, audioOnly) => {
+              if (audioOnly) {
+                listing = app.listings.find(l => l.type === 'A' && fileNameMatches(l, listing));
+              }
+              let page = ((location.hash || '#') + '/' + listing.name).replace(/\/\//g, '/');
               switch (listing.type) {
                 case 'D':
-                  return hash;
+                  break;
                 case 'V':
-                  return '/watch' + hash;
+                  page = '/watch' + page;
+                  break;
                 case 'A':
-                  return '/listen' + hash;
+                  page = '/listen' + page;
+                  break;
               }
+              location.href = page;
             },
             getThumbnail: listing => {
               switch (listing.type) {
@@ -70,6 +82,12 @@
                 case 'A':
                   return 'audio.png';
               }
+            },
+            isAudioOfVideo: listing => {
+              return listing.type === 'A' && app.listings.some(l => l.type === 'V' && fileNameMatches(l, listing));
+            },
+            hasAudioOnly: listing => {
+              return listing.type === 'V' && app.listings.some(l => l.type === 'A' && fileNameMatches(l, listing));
             },
           },
         });
@@ -84,7 +102,7 @@
             fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
               app.listings = listings.map(l => ({
                 ...l,
-                progress: (progress[decodeURIComponent(location.hash).slice(2) + '/' + l.name] * 100) || 0,
+                progress: (progress[decodeURIComponent(location.hash).slice(2) + '/' + l.name.replace(/\.\w+$/, '')] * 100) || 0,
               })).sort((a, b) => multiSort(
                 // dirs on top
                 +(b.type === 'D') - (a.type === 'D'),
@@ -107,6 +125,10 @@
         }
         getListings();
         window.addEventListener("hashchange", () => location.reload());
+
+        function fileNameMatches(a, b) {
+          return a.name.replace(/\.[^.]+$/, '') === b.name.replace(/\.[^.]+$/, '');
+        }
 
         function multiSort(...vs) {
           return vs.find(v => v) || 0;

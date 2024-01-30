@@ -36,6 +36,7 @@ a {
   text-decoration: none;
   color: inherit;
   position: relative;
+  cursor: pointer;
 }
 .listing.D {
   background: #ce5b5791;
@@ -78,6 +79,9 @@ a {
   left: 0;
   height: 3px;
   background: #D2042D;
+}
+.audio-only-button {
+  height: fit-content;
 }
 
 video {
@@ -159,5 +163,6 @@ button {
   border-radius: 0.25rem;
   color: #fff;
   background-color: #17a2b8;
-  margin-left: 0.5rem;;
+  margin-left: 0.5rem;
+  cursor: pointer;
 }

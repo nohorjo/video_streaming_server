@@ -28,6 +28,10 @@
             default
           />
         </video>
+        <audio
+          v-bind:src="src.replace(/[^\.]+$/, 'opus')"
+          autoplay
+        ></audio>
       </div>
       <script>
         const user = localStorage.getItem('user');
@@ -36,6 +40,7 @@
         }
 
         const videoEl = () => document.querySelector('video');
+        const audioEl = () => document.querySelector('audio');
 
         const app = new Vue({
           el: '#app',
@@ -45,7 +50,7 @@
           },
           mounted: () => {
             videoEl().addEventListener("loadedmetadata", () => {
-              Data.get('videoTime/' + user + '/' + encodeURIComponent(location.hash))
+              Data.get('videoTime/' + user + '/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
                 .then(r => {
                   videoEl().currentTime = (r || 0) * videoEl().duration;
                 });
@@ -59,6 +64,13 @@
             });
             videoEl().addEventListener("pause", () => {
               updateTimeRemote();
+              audioEl().pause();
+            });
+            videoEl().addEventListener("play", () => {
+              audioEl().play();
+            });
+            videoEl().addEventListener("seeked", () => {
+              audioEl().currentTime = videoEl().currentTime;
             });
           },
         });
@@ -93,7 +105,7 @@
           if (preventDefault) event.preventDefault();
         }
         function updateTimeRemote() {
-          Data.set('videoTime/' + user + '/' + encodeURIComponent(location.hash), videoEl().currentTime / videoEl().duration);
+          Data.set('videoTime/' + user + '/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), videoEl().currentTime / videoEl().duration);
         }
 
       </script>
