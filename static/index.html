@@ -106,7 +106,7 @@
                             }));
         }
         getListings();
-        window.addEventListener("hashchange", getListings);
+        window.addEventListener("hashchange", () => location.reload());
 
         function multiSort(...vs) {
           return vs.find(v => v) || 0;
