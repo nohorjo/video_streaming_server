@@ -132,7 +132,7 @@
         window.addEventListener("hashchange", () => location.reload());
         window.addEventListener("pageshow", event => {
           if (event.persisted || window.performance?.navigation.type === 2) {
-            location.reload();
+            getListings();
           }
         });
 
