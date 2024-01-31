@@ -45,6 +45,7 @@
           <div
             class="progress"
             v-bind:style="{ width: l.progress + '%'}"
+            v-bind:class="[l.type]"
           ></div>
         </div>
       </div>
@@ -98,21 +99,29 @@
         });
 
         function getListings() {
-          const progress = {};
+          const progresses = {};
           Data.get('videoTime/' + user).then(r => {
             for (const t in r) {
-              progress[decodeURIComponent(decodeURIComponent(t)).slice(2)] = r[t];
+              progresses[decodeURIComponent(decodeURIComponent(t)).slice(2)] = r[t];
             }
           }).finally(() => {
             fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
-              app.listings = listings.map(l => ({
-                ...l,
-                progress: (progress[decodeURIComponent(location.hash).slice(2) + '/' + l.name.replace(/\.\w+$/, '')] * 100) || 0,
-              })).sort((a, b) => multiSort(
+              app.listings = listings.map(l => {
+                const key = (decodeURIComponent(location.hash).slice(2) + '/' + l.name.replace(/\.\w+$/, '')).replace(/^\//, '');
+                let progress;
+
+                if (l.type === 'D' && Object.keys(progresses).some(p => p.startsWith(key))) {
+                  progress = 100;
+                } else {
+                  progress = progresses[key] * 100;
+                }
+
+                return { ...l, progress };
+            }).sort((a, b) => multiSort(
                 // dirs on top
                 +(b.type === 'D') - (a.type === 'D'),
-                // finished on bottom
-                +(a.progress > 98) - (b.progress > 98),
+                // finished on bottom, except for dirs
+                (a.type === 'D' ? 0 : +(a.progress > 98) - (b.progress > 98)),
                 // opened on top
                 +(b.progress > 0) - (a.progress > 0),
                 // by name

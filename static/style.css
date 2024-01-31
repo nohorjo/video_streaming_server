@@ -81,6 +81,9 @@ a {
   height: 3px;
   background: #D2042D;
 }
+.progress.D {
+  background: radial-gradient(circle, rgba(210,4,45,0.6208858543417367) 15%, rgba(4,210,169,1) 100%);
+}
 .audio-only-button {
   margin-top: auto;
 }
