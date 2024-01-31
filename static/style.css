@@ -37,6 +37,7 @@ a {
   color: inherit;
   position: relative;
   cursor: pointer;
+  user-select: none;
 }
 .listing.D {
   background: #ce5b5791;
@@ -140,6 +141,8 @@ audio.overscan {
 .users-list {
   width: 100%;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 .users-list>div {
   width: 10rem;
@@ -149,6 +152,7 @@ audio.overscan {
   text-align: center;
   cursor: pointer;
   border-radius: 5px;
+  user-select: none;
 }
 input {
   padding: 0.375rem 0.75rem;
