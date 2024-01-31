@@ -100,9 +100,9 @@
 
         function getListings() {
           const progresses = {};
-          Data.get('videoTime/' + user).then(r => {
-            for (const t in r) {
-              progresses[decodeURIComponent(decodeURIComponent(t)).slice(2)] = r[t];
+          Data.get('videoTime/' + user).then(({times}) => {
+            for (const t in times) {
+              progresses[decodeURIComponent(decodeURIComponent(t)).slice(2)] = times[t];
             }
           }).finally(() => {
             fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {

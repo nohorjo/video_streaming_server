@@ -50,7 +50,7 @@
           },
           mounted: () => {
             videoEl().addEventListener("loadedmetadata", () => {
-              Data.get('videoTime/' + user + '/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
+              Data.get('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
                 .then(r => {
                   videoEl().currentTime = (r || 0) * videoEl().duration;
                 });
@@ -105,7 +105,7 @@
           if (preventDefault) event.preventDefault();
         }
         function updateTimeRemote() {
-          Data.set('videoTime/' + user + '/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), videoEl().currentTime / videoEl().duration);
+          Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), videoEl().currentTime / videoEl().duration);
         }
 
       </script>

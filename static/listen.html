@@ -55,7 +55,7 @@
           },
           mounted: () => {
             audioEl().addEventListener("loadedmetadata", () => {
-              Data.get('videoTime/' + user + '/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
+              Data.get('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
                 .then(r => {
                   audioEl().currentTime = (r || 0) * audioEl().duration;
                 });
@@ -127,7 +127,7 @@
           videoEl().currentTime = videoEl().duration * Math.random();
         }
         function updateTimeRemote() {
-          Data.set('videoTime/' + user + '/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), audioEl().currentTime / audioEl().duration);
+          Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), audioEl().currentTime / audioEl().duration);
         }
         let hoverTimeout;
         function handleMouseMove() {
