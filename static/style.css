@@ -28,6 +28,16 @@ body {
 a {
   color: inherit;
 }
+.continue-container {
+  width: 100%;
+}
+.continue-container>div {
+  display: flex;
+  overflow: auto;
+}
+.continue-container ::-webkit-scrollbar {
+  display: none;
+}
 .listing {
   box-shadow: -1px 4px 10px 3px rgb(95 95 95 / 82%);
   display: flex;

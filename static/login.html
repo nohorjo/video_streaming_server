@@ -36,6 +36,9 @@
         },
         methods: {
           login: user => {
+            if (!app.users.includes(user)) {
+              Data.set('videoTime/' + user, { times: {}, recents: [] });
+            }
             localStorage.setItem('user', user);
             location.pathname = '/';
           },

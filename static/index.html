@@ -18,6 +18,18 @@
             <path d="M15 12L2 12M2 12L5.5 9M2 12L5.5 15" stroke="#f7efd2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </a>
+        <div
+          v-if="pathParts.length === 0 && recents.length"
+          class="continue-container"
+        >
+          <h2>Continue watching</h2>
+          <div>
+            <listing-component
+              v-for="l in recents"
+              v-bind:listing="l"
+            ></listing-component>
+          </div>
+        </div>
         <div class="crumbs">
           <a href="#">
             <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: relative; top: 5px">
@@ -26,32 +38,11 @@
           </a>
           <span v-for="c in pathParts"> / <a v-bind:href="'#/' + c.path">{{c.name}}</a></span>
         </div>
-        <div
-          v-if="!isAudioOfVideo(l)"
+        <listing-component
           v-for="l in listings"
-          v-on:click="openListing(l)"
-          class="listing"
-          v-bind:class="[l.type]"
-        >
-          <img
-            v-bind:src="getThumbnail(l)"
-            onerror="this.onerror=null;this.src='play.png';this.style.objectFit='contain';"
-            v-bind:class="[l.type]"
-          >
-          <span>
-            {{l.type === 'D' ? l.name : l.name.replace(/\.[^.]+$/, '')}}
-          </span>
-          <button
-            v-if="hasAudioOnly(l)"
-            v-on:click="openListing(l, true); event.stopPropagation()"
-            class="audio-only-button"
-          >Audio only</button>
-          <div
-            class="progress"
-            v-bind:style="{ width: l.progress + '%'}"
-            v-bind:class="[l.type]"
-          ></div>
-        </div>
+          v-if="!isAudioOfVideo(l)"
+          v-bind:listing="l"
+        ></listing-component>
       </div>
       <script>
         const user = localStorage.getItem('user');
@@ -59,55 +50,128 @@
           location.pathname = '/login';
         }
 
+        Vue.component('listing-component', {
+          props: ['listing'],
+          template: `
+            <div
+              v-on:click="openListing(listing)"
+              class="listing"
+              v-bind:class="[listing.type]"
+            >
+              <img
+                v-bind:src="getThumbnail(listing)"
+                onerror="this.onerror=null;this.src='play.png';this.style.objectFit='contain';"
+                v-bind:class="[listing.type]"
+              >
+              <span>
+                {{listing.type === 'D' ? listing.name : listing.name.replace(/\.[^.]+$/, '')}}
+              </span>
+              <button
+                v-if="hasAudioOnly(listing)"
+                v-on:click="openListing(listing, true); event.stopPropagation()"
+                class="audio-only-button"
+              >Audio only</button>
+              <div
+                class="progress"
+                v-bind:style="{ width: listing.progress + '%'}"
+                v-bind:class="[listing.type]"
+              ></div>
+            </div>
+          `,
+          methods: {
+            openListing: async (listing, audioOnly) => {
+              let page = listing.recentData.page;
+              if (!page) {
+                if (audioOnly) {
+                  listing = app.listings.find(l => l.type === 'A' && fileNameMatches(l, listing));
+                }
+                page = ((location.hash || '#') + '/' + listing.name).replace(/\/\//g, '/');
+                switch (listing.type) {
+                  case 'D':
+                    break;
+                  case 'V':
+                    page = '/watch' + page;
+                    break;
+                  case 'A':
+                    page = '/listen?audioOnly=' + audioOnly + page;
+                    break;
+                }
+                listing.recentData.page = page;
+              }
+
+              if (listing.type !== 'D') {
+                await Data.set('videoTime/' + user + '/recents', listing, true);
+              }
+
+              location.href = page;
+            },
+            getThumbnail: listing => {
+              let thumb = listing.recentData.thumb;
+
+              if (!thumb) {
+                switch (listing.type) {
+                  case 'D':
+                  case 'V':
+                    thumb = (location.hash.slice(1) + '/' + listing.name + '.png').replace(/\/\//g, '/');
+                    break;
+                  case 'A':
+                    thumb = 'audio.png';
+                    break;
+                }
+
+                listing.recentData.thumb = thumb;
+              }
+
+              return thumb;
+            },
+            hasAudioOnly: listing => {
+              const hasAudioOnly = (
+                listing.recentData.hasAudioOnly
+                ?? (listing.type === 'V' && app.listings.some(l => l.type === 'A' && fileNameMatches(l, listing)))
+              );
+
+              listing.recentData.hasAudioOnly = hasAudioOnly;
+
+              return hasAudioOnly;
+            },
+          },
+        });
+
         const app = new Vue({
           el: '#app',
           data: {
             listings: [],
             pathParts: [],
+            recents: [],
             user,
           },
           methods: {
-            openListing: (listing, audioOnly) => {
-              if (audioOnly) {
-                listing = app.listings.find(l => l.type === 'A' && fileNameMatches(l, listing));
-              }
-              let page = ((location.hash || '#') + '/' + listing.name).replace(/\/\//g, '/');
-              switch (listing.type) {
-                case 'D':
-                  break;
-                case 'V':
-                  page = '/watch' + page;
-                  break;
-                case 'A':
-                  page = '/listen?audioOnly=' + audioOnly + page;
-                  break;
-              }
-              location.href = page;
-            },
-            getThumbnail: listing => {
-              switch (listing.type) {
-                case 'D':
-                case 'V':
-                  return (location.hash.slice(1) + '/' + listing.name + '.png').replace(/\/\//g, '/');
-                case 'A':
-                  return 'audio.png';
-              }
-            },
             isAudioOfVideo: listing => {
               return listing.type === 'A' && app.listings.some(l => l.type === 'V' && fileNameMatches(l, listing));
-            },
-            hasAudioOnly: listing => {
-              return listing.type === 'V' && app.listings.some(l => l.type === 'A' && fileNameMatches(l, listing));
             },
           },
         });
 
         function getListings() {
           const progresses = {};
-          Data.get('videoTime/' + user).then(({times}) => {
+          Data.get('videoTime/' + user).then(({times, recents}) => {
+            recents.reverse();
+
             for (const t in times) {
               progresses[decodeURIComponent(decodeURIComponent(t)).slice(2)] = times[t];
             }
+
+            const uniqueRecents = [];
+            for (let i = 0; i < recents.length && uniqueRecents.length < 10; i++) {
+              let r = recents[i];
+              if (!uniqueRecents.some(ur => ur.recentData.page === r.recentData.page)) {
+                r.progress = progresses[r.recentData.key] * 100;
+                uniqueRecents.push(r);
+              }
+            }
+
+            app.recents = uniqueRecents;
+            Data.set('videoTime/' + user + '/recents', uniqueRecents.toReversed());
           }).finally(() => {
             fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
               app.listings = listings.map(l => {
@@ -117,10 +181,10 @@
                 if (l.type === 'D' && Object.keys(progresses).some(p => p.startsWith(key))) {
                   progress = 100;
                 } else {
-                  progress = progresses[key] * 100;
+                  progress = (progresses[key] || 0) * 100;
                 }
 
-                return { ...l, progress };
+                return { ...l, progress, recentData: { key } };
             }).sort((a, b) => multiSort(
                 // dirs on top
                 +(b.type === 'D') - (a.type === 'D'),
