@@ -81,7 +81,7 @@ a {
   background: #D2042D;
 }
 .audio-only-button {
-  height: fit-content;
+  margin-top: auto;
 }
 
 video {
@@ -102,6 +102,9 @@ video.overscan {
 audio.overscan {
   width: 95%;
   bottom: 0.8rem;
+}
+.audioOnly {
+  bottom: 60%;
 }
 .close-button {
   position: absolute;

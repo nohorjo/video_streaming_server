@@ -74,7 +74,7 @@
                   page = '/watch' + page;
                   break;
                 case 'A':
-                  page = '/listen' + page;
+                  page = '/listen?audioOnly=' + audioOnly + page;
                   break;
               }
               location.href = page;

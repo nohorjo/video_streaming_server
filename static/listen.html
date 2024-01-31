@@ -12,6 +12,7 @@
     <body onkeydown="handleOnKeyDown(event)">
       <div id="app" onmousemove="handleMouseMove()">
         <video
+          v-if="!audioOnly"
           onclick="togglePlayback()"
           ondblclick="toggleFullScreen()"
           src="_audio_backgrounds/background.webm"
@@ -24,13 +25,14 @@
         <audio
           controls
           v-bind:src="src"
-          v-bind:class="{overscan: isTV}"
+          v-bind:class="{overscan: isTV, audioOnly}"
           autofocus
           autoplay
         ></audio>
         <span
+          v-if="!audioOnly"
           class="close-button"
-          onclick="videoEl().remove(); this.remove(); audioEl().style.bottom='60%'"
+          v-on:click="audioOnly = true"
         >&times;</span>
         <span class="name-title" onclick="audioEl()[audioEl().paused ? 'play' : 'pause']()">{{name}}</span>
       </div>
@@ -49,12 +51,9 @@
             src: location.hash.slice(1),
             name: decodeURIComponent(location.hash.split('/').reverse()[0]).replace(/\.\w+$/, ''),
             isTV: navigator.userAgent.includes('Silk'),
+            audioOnly: new URLSearchParams(location.search).get('audioOnly') === 'true',
           },
           mounted: () => {
-            videoEl().addEventListener("loadedmetadata", () => {
-              randomSeekVideo();
-              setInterval(randomSeekVideo, 15_000);
-            });
             audioEl().addEventListener("loadedmetadata", () => {
               Data.get('videoTime/' + user + '/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
                 .then(r => {
@@ -77,6 +76,10 @@
             });
             audioEl().addEventListener("seeked", () => {
               randomSeekVideo();
+            });
+            videoEl().addEventListener("loadedmetadata", () => {
+              randomSeekVideo();
+              setInterval(randomSeekVideo, 15_000);
             });
           },
         });
