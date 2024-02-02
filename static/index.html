@@ -166,7 +166,7 @@
             const uniqueRecents = [];
             for (let i = 0; i < recents.length && uniqueRecents.length < 10; i++) {
               let r = recents[i];
-              if (!uniqueRecents.some(ur => ur.recentData.page === r.recentData.page)) {
+              if (!uniqueRecents.some(ur => ur.recentData.key === r.recentData.key)) {
                 r.progress = progresses[r.recentData.key] * 100;
                 uniqueRecents.push(r);
               }
