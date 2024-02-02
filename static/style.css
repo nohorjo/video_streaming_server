@@ -58,10 +58,13 @@ a {
 .listing.V {
   background: #444c5ca8;
 }
-.listing span {
-  margin: auto 1rem;
+.name-container {
   width: 12rem;
   word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 1rem;
 }
 .listing img {
   width: 230px;

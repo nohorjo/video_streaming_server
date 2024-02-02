@@ -46,6 +46,37 @@
           v-bind:in-recents="false"
         ></listing-component>
       </div>
+      <template id="listing-component">
+        <div
+          v-on:click="openListing(listing)"
+          class="listing"
+          v-bind:class="[listing.type]"
+        >
+          <img
+            v-bind:src="getThumbnail(listing)"
+            onerror="this.onerror=null;this.src='play.png';this.style.objectFit='contain';"
+            v-bind:class="[listing.type]"
+          >
+          <div class="name-container">
+            <span v-if="inRecents">
+              {{listing.recentData.key.replace(/\/[^\/]+$/, '')}}
+            </span>
+            <span>
+              {{listing.type === 'D' ? listing.name : listing.name.replace(/\.[^.]+$/, '')}}
+            </span>
+          </div>
+          <button
+            v-if="!inRecents && listing.type === 'A' || hasAudioOnly(listing)"
+            v-on:click="openListing(listing, true); event.stopPropagation()"
+            class="audio-only-button"
+          >Audio only</button>
+          <div
+            class="progress"
+            v-bind:style="{ width: listing.progress + '%'}"
+            v-bind:class="[listing.type]"
+          ></div>
+        </div>
+      </template>
       <script>
         const user = localStorage.getItem('user');
         if (!user) {
@@ -54,32 +85,7 @@
 
         Vue.component('listing-component', {
           props: ['listing', 'inRecents'],
-          template: `
-            <div
-              v-on:click="openListing(listing)"
-              class="listing"
-              v-bind:class="[listing.type]"
-            >
-              <img
-                v-bind:src="getThumbnail(listing)"
-                onerror="this.onerror=null;this.src='play.png';this.style.objectFit='contain';"
-                v-bind:class="[listing.type]"
-              >
-              <span>
-                {{listing.type === 'D' ? listing.name : listing.name.replace(/\.[^.]+$/, '')}}
-              </span>
-              <button
-                v-if="!inRecents && listing.type === 'A' || hasAudioOnly(listing)"
-                v-on:click="openListing(listing, true); event.stopPropagation()"
-                class="audio-only-button"
-              >Audio only</button>
-              <div
-                class="progress"
-                v-bind:style="{ width: listing.progress + '%'}"
-                v-bind:class="[listing.type]"
-              ></div>
-            </div>
-          `,
+          template: document.querySelector('template#listing-component').innerHTML,
           methods: {
             openListing: async (listing, audioOnly) => {
               let page = listing.recentData.page;
