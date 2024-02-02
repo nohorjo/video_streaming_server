@@ -89,7 +89,9 @@
           methods: {
             openListing: async (listing, audioOnly) => {
               let page = listing.recentData.page;
-              if (!page) {
+              if (page) {
+                history.pushState({}, '', '/' + listing.recentData.parent);
+              } else {
                 if (audioOnly) {
                   listing = app.listings.find(l => l.type === 'A' && fileNameMatches(l, listing));
                 }
@@ -105,6 +107,7 @@
                     break;
                 }
                 listing.recentData.page = page;
+                listing.recentData.parent = location.hash;
               }
 
               if (listing.type !== 'D') {
