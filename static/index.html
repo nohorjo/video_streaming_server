@@ -127,14 +127,7 @@
               return thumb;
             },
             hasAudioOnly: listing => {
-              const hasAudioOnly = (
-                listing.recentData.hasAudioOnly
-                ?? (listing.type === 'V' && app.listings.some(l => l.type === 'A' && fileNameMatches(l, listing)))
-              );
-
-              listing.recentData.hasAudioOnly = hasAudioOnly;
-
-              return hasAudioOnly;
+              return listing.type === 'V' && app.listings.some(l => l.type === 'A' && fileNameMatches(l, listing));
             },
           },
         });
