@@ -27,6 +27,7 @@
             <listing-component
               v-for="l in recents"
               v-bind:listing="l"
+              v-bind:in-recents="true"
             ></listing-component>
           </div>
         </div>
@@ -42,6 +43,7 @@
           v-for="l in listings"
           v-if="!isAudioOfVideo(l)"
           v-bind:listing="l"
+          v-bind:in-recents="false"
         ></listing-component>
       </div>
       <script>
@@ -51,7 +53,7 @@
         }
 
         Vue.component('listing-component', {
-          props: ['listing'],
+          props: ['listing', 'inRecents'],
           template: `
             <div
               v-on:click="openListing(listing)"
@@ -67,7 +69,7 @@
                 {{listing.type === 'D' ? listing.name : listing.name.replace(/\.[^.]+$/, '')}}
               </span>
               <button
-                v-if="hasAudioOnly(listing)"
+                v-if="!inRecents && listing.type === 'A' || hasAudioOnly(listing)"
                 v-on:click="openListing(listing, true); event.stopPropagation()"
                 class="audio-only-button"
               >Audio only</button>
