@@ -86,6 +86,10 @@ a {
     width: 9rem;
     height: 5rem;
   }
+  .name-container {
+    width: 9rem;
+    padding: 0;
+  }
 }
 .progress {
   position: absolute;
