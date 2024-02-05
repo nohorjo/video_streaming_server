@@ -83,138 +83,140 @@
           location.pathname = '/login';
         }
 
-        Vue.component('listing-component', {
-          props: ['listing', 'inRecents'],
-          template: document.querySelector('template#listing-component').innerHTML,
-          methods: {
-            openListing: async (listing, audioOnly) => {
-              let page = listing.recentData.page;
-              if (page) {
-                history.pushState({}, '', '/' + listing.recentData.parent);
-              } else {
-                if (audioOnly) {
-                  listing = app.listings.find(l => l.type === 'A' && fileNameMatches(l, listing));
-                }
-                page = ((location.hash || '#') + '/' + listing.name).replace(/\/\//g, '/');
-                switch (listing.type) {
-                  case 'D':
-                    break;
-                  case 'V':
-                    page = '/watch' + page;
-                    break;
-                  case 'A':
-                    page = '/listen?audioOnly=' + audioOnly + page;
-                    break;
-                }
-                listing.recentData.page = page;
-                listing.recentData.parent = location.hash;
-              }
-
-              if (listing.type !== 'D') {
-                await Data.set('videoTime/' + user + '/recents', listing, true);
-              }
-
-              location.href = page;
-            },
-            getThumbnail: listing => {
-              let thumb = listing.recentData.thumb;
-
-              if (!thumb) {
-                switch (listing.type) {
-                  case 'D':
-                  case 'V':
-                    thumb = (location.hash.slice(1) + '/' + listing.name + '.png').replace(/\/\//g, '/');
-                    break;
-                  case 'A':
-                    thumb = 'audio.png';
-                    break;
-                }
-
-                listing.recentData.thumb = thumb;
-              }
-
-              return thumb;
-            },
-            hasAudioOnly: listing => {
-              return listing.type === 'V' && app.listings.some(l => l.type === 'A' && fileNameMatches(l, listing));
-            },
-          },
-        });
-
-        const app = new Vue({
-          el: '#app',
-          data: {
-            listings: [],
-            pathParts: [],
-            recents: [],
-            user,
-          },
-          methods: {
-            isAudioOfVideo: listing => {
-              return listing.type === 'A' && app.listings.some(l => l.type === 'V' && fileNameMatches(l, listing));
-            },
-          },
-        });
-
-        function getListings() {
-          const progresses = {};
-          Data.get('videoTime/' + user).then(({times, recents}) => {
-            recents.reverse();
-
-            for (const t in times) {
-              progresses[decodeURIComponent(decodeURIComponent(t)).slice(2)] = times[t];
-            }
-
-            const uniqueRecents = [];
-            for (let i = 0; i < recents.length && uniqueRecents.length < 10; i++) {
-              let r = recents[i];
-              if (!uniqueRecents.some(ur => ur.recentData.key === r.recentData.key)) {
-                r.progress = progresses[r.recentData.key] * 100;
-                uniqueRecents.push(r);
-              }
-            }
-
-            app.recents = uniqueRecents;
-            Data.set('videoTime/' + user + '/recents', uniqueRecents.toReversed());
-          }).finally(() => {
-            fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
-              app.listings = listings.map(l => {
-                const key = (decodeURIComponent(location.hash).slice(2) + '/' + l.name.replace(/\.\w+$/, '')).replace(/^\//, '');
-                let progress;
-
-                if (l.type === 'D' && Object.keys(progresses).some(p => p.startsWith(key))) {
-                  progress = 100;
+        window.addEventListener('load', () => {
+          Vue.component('listing-component', {
+            props: ['listing', 'inRecents'],
+            template: document.querySelector('template#listing-component').innerHTML,
+            methods: {
+              openListing: async (listing, audioOnly) => {
+                let page = listing.recentData.page;
+                if (page) {
+                  history.pushState({}, '', '/' + listing.recentData.parent);
                 } else {
-                  progress = (progresses[key] || 0) * 100;
+                  if (audioOnly) {
+                    listing = app.listings.find(l => l.type === 'A' && fileNameMatches(l, listing));
+                  }
+                  page = ((location.hash || '#') + '/' + listing.name).replace(/\/\//g, '/');
+                  switch (listing.type) {
+                    case 'D':
+                      break;
+                    case 'V':
+                      page = '/watch' + page;
+                      break;
+                    case 'A':
+                      page = '/listen?audioOnly=' + audioOnly + page;
+                      break;
+                  }
+                  listing.recentData.page = page;
+                  listing.recentData.parent = location.hash;
                 }
 
-                return { ...l, progress, recentData: { key } };
-            }).sort((a, b) => multiSort(
-                // dirs on top
-                +(b.type === 'D') - (a.type === 'D'),
-                // finished on bottom, except for dirs
-                (a.type === 'D' ? 0 : +(a.progress > 98) - (b.progress > 98)),
-                // opened on top
-                +(b.progress > 0) - (a.progress > 0),
-                // by name
-                a.name.localeCompare(b.name),
-              ));
-            });
+                if (listing.type !== 'D') {
+                  await Data.set('videoTime/' + user + '/recents', listing, true);
+                }
+
+                location.href = page;
+              },
+              getThumbnail: listing => {
+                let thumb = listing.recentData.thumb;
+
+                if (!thumb) {
+                  switch (listing.type) {
+                    case 'D':
+                    case 'V':
+                      thumb = (location.hash.slice(1) + '/' + listing.name + '.png').replace(/\/\//g, '/');
+                      break;
+                    case 'A':
+                      thumb = 'audio.png';
+                      break;
+                  }
+
+                  listing.recentData.thumb = thumb;
+                }
+
+                return thumb;
+              },
+              hasAudioOnly: listing => {
+                return listing.type === 'V' && app.listings.some(l => l.type === 'A' && fileNameMatches(l, listing));
+              },
+            },
           });
-          app.pathParts = location.hash
-                            .split('/')
-                            .filter(p => p && p !== '#')
-                            .map((p, i, arr) => ({
-                                name: decodeURIComponent(p),
-                                path: arr.slice(0, i + 1).join('/')
-                            }));
-        }
-        getListings();
-        window.addEventListener("hashchange", () => location.reload());
-        window.addEventListener("pageshow", event => {
-          if (event.persisted || window.performance?.navigation.type === 2) {
-            getListings();
+
+          const app = new Vue({
+            el: '#app',
+            data: {
+              listings: [],
+              pathParts: [],
+              recents: [],
+              user,
+            },
+            methods: {
+              isAudioOfVideo: listing => {
+                return listing.type === 'A' && app.listings.some(l => l.type === 'V' && fileNameMatches(l, listing));
+              },
+            },
+          });
+
+          function getListings() {
+            const progresses = {};
+            Data.get('videoTime/' + user).then(({times, recents}) => {
+              recents.reverse();
+
+              for (const t in times) {
+                progresses[decodeURIComponent(decodeURIComponent(t)).slice(2)] = times[t];
+              }
+
+              const uniqueRecents = [];
+              for (let i = 0; i < recents.length && uniqueRecents.length < 10; i++) {
+                let r = recents[i];
+                if (!uniqueRecents.some(ur => ur.recentData.key === r.recentData.key)) {
+                  r.progress = progresses[r.recentData.key] * 100;
+                  uniqueRecents.push(r);
+                }
+              }
+
+              app.recents = uniqueRecents;
+              Data.set('videoTime/' + user + '/recents', uniqueRecents.toReversed());
+            }).finally(() => {
+              fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
+                app.listings = listings.map(l => {
+                  const key = (decodeURIComponent(location.hash).slice(2) + '/' + l.name.replace(/\.\w+$/, '')).replace(/^\//, '');
+                  let progress;
+
+                  if (l.type === 'D' && Object.keys(progresses).some(p => p.startsWith(key))) {
+                    progress = 100;
+                  } else {
+                    progress = (progresses[key] || 0) * 100;
+                  }
+
+                  return { ...l, progress, recentData: { key } };
+              }).sort((a, b) => multiSort(
+                  // dirs on top
+                  +(b.type === 'D') - (a.type === 'D'),
+                  // finished on bottom, except for dirs
+                  (a.type === 'D' ? 0 : +(a.progress > 98) - (b.progress > 98)),
+                  // opened on top
+                  +(b.progress > 0) - (a.progress > 0),
+                  // by name
+                  a.name.localeCompare(b.name),
+                ));
+              });
+            });
+            app.pathParts = location.hash
+                              .split('/')
+                              .filter(p => p && p !== '#')
+                              .map((p, i, arr) => ({
+                                  name: decodeURIComponent(p),
+                                  path: arr.slice(0, i + 1).join('/')
+                              }));
           }
+          getListings();
+          window.addEventListener("hashchange", () => location.reload());
+          window.addEventListener("pageshow", event => {
+            if (event.persisted || window.performance?.navigation.type === 2) {
+              getListings();
+            }
+          });
         });
 
         function fileNameMatches(a, b) {
