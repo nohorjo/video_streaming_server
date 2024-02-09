@@ -7,20 +7,17 @@
       <title>Video Streaming Server</title>
       <link rel="stylesheet" href="style.css">
       <script src="http://muhammedhaque.co.uk/pages/data-api.js"></script>
+      <script src="https://www.youtube.com/iframe_api"></script>
       <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     </head>
     <body onkeydown="handleOnKeyDown(event)">
       <div id="app" onmousemove="handleMouseMove()">
-        <video
+        <div
           v-if="!audioOnly"
-          onclick="togglePlayback()"
-          ondblclick="toggleFullScreen()"
-          src="_audio_backgrounds/background.webm"
-          playsinline
-          autoplay
-          loop
-        ></video>
+          id="player"
+        ></div>
         <div class="overlaybutton back" onclick="audioEl().currentTime -= 5"></div>
+        <div class="overlaybutton middle" onclick="mayToggleFullScreen()"></div>
         <div class="overlaybutton forward" onclick="audioEl().currentTime += 5"></div>
         <audio
           controls
@@ -32,9 +29,9 @@
         <span
           v-if="!audioOnly"
           class="close-button"
-          v-on:click="audioOnly = true"
+          v-on:click="audioOnly = true; document.getElementById('player').remove()"
         >&times;</span>
-        <span class="name-title" onclick="audioEl()[audioEl().paused ? 'play' : 'pause']()">{{name}}</span>
+        <span class="name-title" onclick="togglePlayback()">{{name}}</span>
       </div>
       <script>
         const user = localStorage.getItem('user');
@@ -43,7 +40,7 @@
         }
 
         const audioEl = () => document.querySelector('audio');
-        const videoEl = () => document.querySelector('video');
+        let videoEl;
 
         const app = new Vue({
           el: '#app',
@@ -69,17 +66,13 @@
             });
             [ 'pause', 'ended' ].forEach(e => audioEl().addEventListener(e, () => {
               updateTimeRemote();
-              videoEl().pause();
+              videoEl.pauseVideo();
             }));
             audioEl().addEventListener("play", () => {
-              videoEl().play();
+              videoEl.playVideo();
             });
             audioEl().addEventListener("seeked", () => {
               randomSeekVideo();
-            });
-            videoEl().addEventListener("loadedmetadata", () => {
-              randomSeekVideo();
-              setInterval(randomSeekVideo, 15_000);
             });
           },
         });
@@ -118,15 +111,31 @@
         function togglePlayback() {
           audioEl()[audioEl().paused ? 'play' : 'pause']();
         }
+        let clickTimeout;
+        function mayToggleFullScreen(event) {
+          if (clickTimeout) {
+            toggleFullScreen();
+            clearTimeout(clickTimeout);
+            clickTimeout = 0;
+          } else {
+            clickTimeout = setTimeout(() => {
+              togglePlayback();
+              clickTimeout = 0;
+            }, 400);
+          }
+        }
         function toggleFullScreen() {
           if (document.fullscreenElement) {
             document.exitFullscreen();
           } else {
             audioEl().parentElement.requestFullscreen();
           }
+          setTimeout(() => {
+            videoEl.setSize(window.innerWidth, window.innerHeight)
+          }, 200);
         }
         function randomSeekVideo() {
-          videoEl().currentTime = videoEl().duration * Math.random();
+          videoEl.seekTo(videoEl.getDuration() * Math.random());
         }
         function updateTimeRemote() {
           Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), audioEl().currentTime / audioEl().duration);
@@ -137,6 +146,42 @@
           const el = document.getElementById('app');
           el.classList.add('hovering');
           hoverTimeout = setTimeout(() => el.classList.remove('hovering'), 7000);
+        }
+
+        function onYouTubeIframeAPIReady() {
+          videoEl = new YT.Player('player', {
+            height: window.innerHeight,
+            width: window.innerWidth,
+            videoId: 'hXoua0T7kQQ',
+            playerVars: {
+              autoplay: 1,
+              controls: 0,
+              disablekb: 1,
+              enablejsapi: 1,
+              fs: 0,
+              loop: 1,
+              playsinline: 1,
+              rel: 0,
+              start: Math.random() * 15000,
+            },
+            events: {
+              onReady: () => {
+                randomSeekVideo();
+                setInterval(randomSeekVideo, 15_000);
+                videoEl.playVideo();
+              },
+              onStateChange: event => {
+                switch (event.data) {
+                  case YT.PlayerState.PLAYING:
+                    audioEl().play();
+                    break;
+                  case YT.PlayerState.PAUSED:
+                    audioEl().pause();
+                    break;
+                }
+              },
+            }
+          });
         }
       </script>
     </body>
