@@ -18,7 +18,6 @@
           autofocus
           playsinline
           autoplay
-          loop
         >
           <track
             label="Track 1 - [English]"
@@ -62,9 +61,15 @@
                 updateTimeRemote();
               }
             });
-            videoEl().addEventListener("pause", () => {
+            videoEl().addEventListener('pause', () => {
               updateTimeRemote();
               audioEl().pause();
+            });
+            videoEl().addEventListener('ended', () => {
+              updateTimeRemote();
+              const { hash } = location;
+              const index = hash.lastIndexOf('/');
+              location.href = `/?last=${encodeURIComponent(hash.slice(index + 1))}${hash.slice(0, index)}`;
             });
             videoEl().addEventListener("play", () => {
               audioEl().play();

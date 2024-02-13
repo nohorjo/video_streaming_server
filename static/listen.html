@@ -64,10 +64,16 @@
                 updateTimeRemote();
               }
             });
-            [ 'pause', 'ended' ].forEach(e => audioEl().addEventListener(e, () => {
+            audioEl().addEventListener('pause', () => {
               updateTimeRemote();
               videoEl.pauseVideo();
-            }));
+            });
+            audioEl().addEventListener('ended', () => {
+              updateTimeRemote();
+              const { hash } = location;
+              const index = hash.lastIndexOf('/');
+              location.href = `/?last=${encodeURIComponent(hash.slice(index + 1))}&audioOnly=${app.audioOnly}${hash.slice(0, index)}`;
+            });
             audioEl().addEventListener("play", () => {
               videoEl.playVideo();
             });

@@ -88,35 +88,7 @@
             props: ['listing', 'inRecents'],
             template: document.querySelector('template#listing-component').innerHTML,
             methods: {
-              openListing: async (listing, audioOnly) => {
-                let page = listing.recentData.page;
-                if (page) {
-                  history.pushState({}, '', '/' + listing.recentData.parent);
-                } else {
-                  if (audioOnly) {
-                    listing = app.listings.find(l => l.type === 'A' && fileNameMatches(l, listing));
-                  }
-                  page = ((location.hash || '#') + '/' + listing.name).replace(/\/\//g, '/');
-                  switch (listing.type) {
-                    case 'D':
-                      break;
-                    case 'V':
-                      page = '/watch' + page;
-                      break;
-                    case 'A':
-                      page = '/listen?audioOnly=' + audioOnly + page;
-                      break;
-                  }
-                  listing.recentData.page = page;
-                  listing.recentData.parent = location.hash;
-                }
-
-                if (listing.type !== 'D') {
-                  await Data.set('videoTime/' + user + '/recents', listing, true);
-                }
-
-                location.href = page;
-              },
+              openListing,
               getThumbnail: listing => {
                 let thumb = listing.recentData.thumb;
 
@@ -157,7 +129,7 @@
             },
           });
 
-          function getListings() {
+          function getListings(followNext = true) {
             const progresses = {};
             Data.get('videoTime/' + user).then(({times, recents}) => {
               recents.reverse();
@@ -200,6 +172,19 @@
                   // by name
                   a.name.localeCompare(b.name),
                 ));
+
+                if (followNext) {
+                  const params = new URLSearchParams(location.search);
+
+                  let last =  params.get('last');
+                  if (last) {
+                    last = decodeURIComponent(last);
+                    const next = listings[listings.findIndex(l => l.name === last) + 1];
+                    if (next) {
+                      openListing(app.listings.find(l => l.name === next.name), params.get('audioOnly') === 'true');
+                    }
+                  }
+                }
               });
             });
             app.pathParts = location.hash
@@ -211,10 +196,41 @@
                               }));
           }
           getListings();
+
+          async function openListing (listing, audioOnly) {
+            let page = listing.recentData.page;
+            if (page) {
+              history.pushState({}, '', '/' + listing.recentData.parent);
+            } else {
+              if (audioOnly) {
+                listing = app.listings.find(l => l.type === 'A' && fileNameMatches(l, listing));
+              }
+              page = ((location.hash || '#') + '/' + listing.name).replace(/\/\//g, '/');
+              switch (listing.type) {
+                case 'D':
+                  break;
+                case 'V':
+                  page = '/watch' + page;
+                  break;
+                case 'A':
+                  page = '/listen?audioOnly=' + audioOnly + page;
+                  break;
+              }
+              listing.recentData.page = page;
+              listing.recentData.parent = location.hash;
+            }
+
+            if (listing.type !== 'D') {
+              await Data.set('videoTime/' + user + '/recents', listing, true);
+            }
+
+            location.href = page;
+          }
+
           window.addEventListener("hashchange", () => location.reload());
           window.addEventListener("pageshow", event => {
             if (event.persisted || window.performance?.navigation.type === 2) {
-              getListings();
+              getListings(false);
             }
           });
         });
