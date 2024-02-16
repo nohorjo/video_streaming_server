@@ -180,7 +180,7 @@
                   if (last) {
                     last = decodeURIComponent(last);
                     const next = listings[listings.findIndex(l => l.name === last) + 1];
-                    if (next) {
+                    if (next && next.type !== 'D') {
                       openListing(app.listings.find(l => l.name === next.name), params.get('audioOnly') === 'true');
                     }
                   }
