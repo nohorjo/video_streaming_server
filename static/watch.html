@@ -116,7 +116,10 @@
           if (preventDefault) event.preventDefault();
         }
         function updateTimeRemote() {
-          Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), videoEl().currentTime / videoEl().duration);
+          const percentage = videoEl().currentTime / videoEl().duration;
+          if (percentage) {
+            Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), percentage);
+          }
         }
 
       </script>

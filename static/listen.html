@@ -150,7 +150,10 @@
           videoEl.seekTo(videoEl.getDuration() * Math.random());
         }
         function updateTimeRemote() {
-          Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), audioEl().currentTime / audioEl().duration);
+          const percentage = audioEl().currentTime / audioEl().duration;
+          if (percentage) {
+            Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), percentage);
+          }
         }
         let hoverTimeout;
         function handleMouseMove() {
