@@ -67,7 +67,7 @@ app.get('/media/*', async function(req, res, next) {
     res.send(contents.map(
       x => {
         let type;
-        if (x.isDirectory()) {
+        if (x.isDirectory() || x.isSymbolicLink()) {
           type = 'D';
         } else if (AUDIO_EXTS.some(e => x.name.endsWith(e))) {
           type = 'A';
