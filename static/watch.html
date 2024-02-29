@@ -14,6 +14,7 @@
         <video
           v-bind:src="src"
           v-bind:class="{overscan: isTV}"
+          onfocus="this.blur()"
           controls
           autofocus
           playsinline
@@ -108,6 +109,9 @@
                 videoEl().requestFullscreen();
               }
               break;
+            case ' ':
+              togglePlayback();
+              break;
             default:
               console.log(event.key);
               preventDefault = false;
@@ -121,7 +125,9 @@
             Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), percentage);
           }
         }
-
+        function togglePlayback() {
+          videoEl()[videoEl().paused ? 'play' : 'pause']();
+        }
       </script>
     </body>
   </html>
