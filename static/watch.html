@@ -58,7 +58,9 @@
             videoEl().addEventListener("loadedmetadata", () => {
               Data.get('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
                 .then(r => {
-                  videoEl().currentTime = (r || 0) * videoEl().duration;
+                  if (r && r !== 1) {
+                    videoEl().currentTime = (r || 0) * videoEl().duration;
+                  }
                 });
             });
             let updateTimeout;

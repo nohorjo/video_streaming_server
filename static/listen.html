@@ -60,7 +60,9 @@
             audioEl().addEventListener("loadedmetadata", () => {
               Data.get('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
                 .then(r => {
-                  audioEl().currentTime = (r || 0) * audioEl().duration;
+                  if (r && r !== 1) {
+                    audioEl().currentTime = (r || 0) * audioEl().duration;
+                  }
                 });
             });
             let updateTimeout;
