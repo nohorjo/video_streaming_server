@@ -174,14 +174,20 @@
                 ));
 
                 if (followNext) {
-                  const params = new URLSearchParams(location.search);
-
-                  let last =  params.get('last');
-                  if (last) {
-                    last = decodeURIComponent(last);
-                    const next = listings[listings.findIndex(l => l.name === last) + 1];
-                    if (next && next.type !== 'D') {
-                      openListing(app.listings.find(l => l.name === next.name), params.get('audioOnly') === 'true');
+                  let lastData = localStorage.getItem('lastData');
+                  localStorage.removeItem('lastData');
+                  if (lastData) {
+                    lastData = JSON.parse(lastData);
+                    if (lastData.random) {
+                      openRandomListing();
+                    } else {
+                      const next = listings[listings.findIndex(l => l.name === lastData.name) + 1];
+                      if (next && next.type !== 'D') {
+                        openListing(
+                          app.listings.find(l => l.name === next.name),
+                          lastData.audioOnly,
+                        );
+                      }
                     }
                   }
                 }

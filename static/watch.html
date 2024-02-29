@@ -46,6 +46,7 @@
 
         const videoEl = () => document.querySelector('video');
         const audioEl = () => document.querySelector('audio');
+        const searchParams = new URLSearchParams(location.search);
 
         const app = new Vue({
           el: '#app',
@@ -78,7 +79,11 @@
               updateTimeRemote();
               const { hash } = location;
               const index = hash.lastIndexOf('/');
-              location.href = `/?last=${encodeURIComponent(hash.slice(index + 1))}${hash.slice(0, index)}`;
+              localStorage.setItem('lastData', JSON.stringify({
+                name: decodeURIComponent(hash.slice(index + 1)),
+                audioOnly: app.audioOnly,
+              }));
+              location.href = `/${hash.slice(0, index)}`;
             });
             videoEl().addEventListener("play", () => {
               audioEl().play();
