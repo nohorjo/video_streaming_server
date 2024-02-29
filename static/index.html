@@ -38,6 +38,7 @@
             </svg>
           </a>
           <span v-for="c in pathParts"> / <a v-bind:href="'#/' + c.path">{{c.name}}</a></span>
+          <button v-if="listings.some(l => l.type !== 'D')" v-on:click="openRandomListing()">Random</button>
         </div>
         <listing-component
           v-for="l in listings"
@@ -123,6 +124,7 @@
               user,
             },
             methods: {
+              openRandomListing,
               isAudioOfVideo: listing => {
                 return listing.type === 'A' && app.listings.some(l => l.type === 'V' && fileNameMatches(l, listing));
               },
@@ -203,7 +205,7 @@
           }
           getListings();
 
-          async function openListing (listing, audioOnly) {
+          async function openListing(listing, audioOnly, random) {
             let page = listing.recentData.page;
             if (page) {
               history.pushState({}, '', '/' + listing.recentData.parent);
@@ -216,10 +218,10 @@
                 case 'D':
                   break;
                 case 'V':
-                  page = '/watch' + page;
+                  page = `/watch?random=${random}${page}`;
                   break;
                 case 'A':
-                  page = '/listen?audioOnly=' + audioOnly + page;
+                  page = `/listen?audioOnly=${audioOnly}&random=${random}${page}`;
                   break;
               }
               listing.recentData.page = page;
@@ -231,6 +233,14 @@
             }
 
             location.href = page;
+          }
+
+          function openRandomListing() {
+            let listing;
+            do {
+              listing = app.listings[Math.round(Math.random() * app.listings.length)];
+            } while (listing.type === 'D');
+            openListing(listing, false, true);
           }
 
           window.addEventListener("hashchange", () => location.reload());
