@@ -8,10 +8,10 @@ for time in "$@"
 do
   if ! [[ -z "$2" ]]
   then
-    to="-to $2"
+    to="-t $(bc -l <<< "$2 - $1")"
   else
     to=""
   fi
-  ffmpeg -i "$FN" -ss $1 $to -c copy $1-$FN
+  ffmpeg -ss $1 $to -i "$FN" -c copy $1-$FN
   shift
 done
