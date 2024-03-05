@@ -38,45 +38,53 @@ app.get(`/media/*.(${EXTS.join('|')})`, async function(req, res) {
   }
 
   const filePath = decodeURIComponent(req.path);
-  const fileSize = (await fs.stat(filePath)).size;
+  try {
+    const fileSize = (await fs.stat(filePath)).size;
 
-  if (!fileSize) {
-    res.sendStatus(404);
-    return;
+    if (!fileSize) {
+      res.sendStatus(404);
+      return;
+    }
+
+    streamFile({
+      res,
+      range,
+      filePath,
+      fileSize,
+    });
+  } catch (e) {
+    res.status(500).send(e);
   }
-
-  streamFile({
-    res,
-    range,
-    filePath,
-    fileSize,
-  });
 });
 
 app.get('/media/*', async function(req, res, next) {
   const path ='.' + decodeURIComponent(req.path);
 
-  if ((await fs.stat(path)).isFile()) {
-    next();
-  } else {
-    const contents = await fs.readdir(
-      path,
-      { withFileTypes: true },
-    )
+  try {
+    if ((await fs.stat(path)).isFile()) {
+      next();
+    } else {
+      const contents = await fs.readdir(
+        path,
+        { withFileTypes: true },
+      )
 
-    res.send(contents.map(
-      x => {
-        let type;
-        if (x.isDirectory() || x.isSymbolicLink()) {
-          type = 'D';
-        } else if (AUDIO_EXTS.some(e => x.name.endsWith(e))) {
-          type = 'A';
-        } else if (VIDEO_EXTS.some(e => x.name.endsWith(e))) {
-          type = 'V';
+      res.send(contents.map(
+        x => {
+          let type;
+          if (x.isDirectory() || x.isSymbolicLink()) {
+            type = 'D';
+          } else if (AUDIO_EXTS.some(e => x.name.endsWith(e))) {
+            type = 'A';
+          } else if (VIDEO_EXTS.some(e => x.name.endsWith(e))) {
+            type = 'V';
+          }
+          return { name: x.name, type };
         }
-        return { name: x.name, type };
-      }
-    ).filter(x => !!x.type && !x.name.startsWith('_')));
+      ).filter(x => !!x.type && !x.name.startsWith('_')));
+    }
+  } catch (e) {
+    res.status(500).send(e);
   }
 });
 
