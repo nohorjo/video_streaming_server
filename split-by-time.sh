@@ -12,6 +12,6 @@ do
   else
     to=""
   fi
-  ffmpeg -ss $1 $to -i "$FN" -c copy $1-$FN
+  ffmpeg -n -ss $1 $to -i "$FN" -c copy $1-$FN
   shift
 done
