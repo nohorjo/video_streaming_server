@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require('cookie-parser');
 const { createReadStream, promises: fs }  = require("fs");
 const mime = require('mime-types');
 
@@ -8,6 +9,13 @@ const VIDEO_EXTS = ['mkv', 'mp4', 'webm'];
 const EXTS = [...AUDIO_EXTS, ...VIDEO_EXTS];
 
 const app = express();
+
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+  res.cookie('data_key', 'videoTime');
+  next();
+});
 
 app.use(
   '/',

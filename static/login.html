@@ -28,6 +28,9 @@
     <script>
       localStorage.removeItem('user');
 
+      const cookies = document.cookie.split(/;\s*/g).map(x => x.split('=')).reduce((c, [k, v]) => ({...c, [k]: v}), {});
+      const { data_key } = cookies;
+
       const app = new Vue({
         el: '#app',
         data: {
@@ -37,7 +40,7 @@
         methods: {
           login: user => {
             if (!app.users.includes(user)) {
-              Data.set('videoTime/' + user, { times: {}, recents: [] });
+              Data.set(data_key + '/' + user, { times: {}, recents: [] });
             }
             localStorage.setItem('user', user);
             location.pathname = '/';
@@ -45,7 +48,7 @@
         },
       });
 
-      Data.get('videoTime', true).then(r => app.users = r.sort());
+      Data.get(data_key, true).then(r => app.users = r.sort());
 
       function hashColour(str) {
         const seed = 7;
