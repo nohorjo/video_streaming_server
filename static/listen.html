@@ -157,8 +157,22 @@
             videoEl.setSize(window.innerWidth, window.innerHeight)
           }, 200);
         }
+        const seekedToTimes = [];
         function randomSeekVideo() {
-          videoEl.seekTo(videoEl.getDuration() * Math.random());
+          if (videoEl.getPlayerState() !== 2) {
+            let time;
+            for (let i = 0; i < 500; i++) {
+              time = videoEl.getDuration() * Math.random();
+              if (!seekedToTimes.some(t => time > (t - 15) && time < (t + 15))) {
+                break;
+              }
+              if (i === 499) {
+                seekedToTimes.splice(0);
+              }
+            }
+            seekedToTimes.push(time);
+            videoEl.seekTo(time);
+          }
         }
         function updateTimeRemote() {
           const percentage = audioEl().currentTime / audioEl().duration;
