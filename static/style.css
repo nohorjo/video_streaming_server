@@ -139,6 +139,10 @@ audio.overscan {
   top: 0;
   right: 0;
 }
+.close-button.overscan {
+  top: 10px;
+  right: 10px;
+}
 #app:fullscreen .close-button {
   display: none;
 }
@@ -170,7 +174,10 @@ audio.overscan {
   top: 0;
   left: 0;
 }
-
+.parent-button.overscan {
+  top: 10px;
+  left: 10px;
+}
 .users-list {
   width: 100%;
   display: flex;
