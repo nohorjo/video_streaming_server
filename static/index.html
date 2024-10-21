@@ -83,6 +83,8 @@
         if (!user) {
           location.pathname = '/login';
         }
+        const cookies = document.cookie.split(/;\s*/g).map(x => x.split('=')).reduce((c, [k, v]) => ({...c, [k]: v}), {});
+        const { data_key } = cookies;
 
         window.addEventListener('load', () => {
           Vue.component('listing-component', {
@@ -133,7 +135,7 @@
 
           function getListings(followNext = true) {
             const progresses = {};
-            Data.get('videoTime/' + user).then(({times, recents}) => {
+            Data.get(data_key + '/' + user).then(({times, recents}) => {
               recents.reverse();
 
               for (const t in times) {
@@ -150,7 +152,7 @@
               }
 
               app.recents = uniqueRecents;
-              Data.set('videoTime/' + user + '/recents', uniqueRecents.toReversed());
+              Data.set(data_key + '/' + user + '/recents', uniqueRecents.toReversed());
             }).finally(() => {
               fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
                 app.listings = listings.map(l => {
@@ -229,7 +231,7 @@
             }
 
             if (listing.type !== 'D') {
-              await Data.set('videoTime/' + user + '/recents', listing, true);
+              await Data.set(data_key + '/' + user + '/recents', listing, true);
             }
 
             location.href = page;

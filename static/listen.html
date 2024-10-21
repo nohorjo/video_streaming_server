@@ -46,6 +46,8 @@
         if (!user) {
           location.pathname = '/login';
         }
+        const cookies = document.cookie.split(/;\s*/g).map(x => x.split('=')).reduce((c, [k, v]) => ({...c, [k]: v}), {});
+        const { data_key } = cookies;
 
         const audioEl = () => document.querySelector('audio');
         let videoEl;
@@ -62,7 +64,7 @@
           },
           mounted: () => {
             audioEl().addEventListener("loadedmetadata", () => {
-              Data.get('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
+              Data.get(data_key + '/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
                 .then(r => {
                   if (r && r !== 1) {
                     audioEl().currentTime = (r || 0) * audioEl().duration;
@@ -177,7 +179,7 @@
         function updateTimeRemote() {
           const percentage = audioEl().currentTime / audioEl().duration;
           if (percentage) {
-            Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), percentage);
+            Data.set(data_key + '/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), percentage);
           }
         }
         let hoverTimeout;

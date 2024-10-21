@@ -25,8 +25,13 @@
             kind="subtitles"
             srclang="en"
             v-bind:src="src + '.srt'"
-            default
           />
+          <track
+            label="Track 2 - [English]"
+            kind="captions"
+            srclang="en-GB"
+            v-bind:src="src + '.vtt'"
+          >
         </video>
         <a class="parent-button"
           v-bind:class="{overscan: isTV}"
@@ -46,6 +51,8 @@
         if (!user) {
           location.pathname = '/login';
         }
+        const cookies = document.cookie.split(/;\s*/g).map(x => x.split('=')).reduce((c, [k, v]) => ({...c, [k]: v}), {});
+        const { data_key } = cookies;
 
         const videoEl = () => document.querySelector('video');
         const audioEl = () => document.querySelector('audio');
@@ -60,7 +67,7 @@
           },
           mounted: () => {
             videoEl().addEventListener("loadedmetadata", () => {
-              Data.get('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
+              Data.get(data_key + '/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')))
                 .then(r => {
                   if (r && r !== 1) {
                     videoEl().currentTime = (r || 0) * videoEl().duration;
@@ -95,6 +102,7 @@
             videoEl().addEventListener("seeked", () => {
               audioEl().currentTime = videoEl().currentTime;
             });
+            [...videoEl().textTracks].forEach(t => t.mode = 'showing');
           },
         });
 
@@ -133,7 +141,7 @@
         function updateTimeRemote() {
           const percentage = videoEl().currentTime / videoEl().duration;
           if (percentage) {
-            Data.set('videoTime/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), percentage);
+            Data.set(data_key + '/' + user + '/times/' + encodeURIComponent(location.hash.replace(/\.\w+$/, '')), percentage);
           }
         }
         function togglePlayback() {
