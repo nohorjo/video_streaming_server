@@ -65,6 +65,9 @@
             <span>
               {{listing.type === 'D' ? listing.name : listing.name.replace(/\.[^.]+$/, '')}}
             </span>
+            <span>
+              {{listing.duration}}
+            </span>
           </div>
           <button
             v-if="!inRecents && listing.type === 'A' || hasAudioOnly(listing)"
@@ -154,7 +157,7 @@
               app.recents = uniqueRecents;
               Data.set(data_key + '/' + user + '/recents', uniqueRecents.toReversed());
             }).finally(() => {
-              fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
+              function setListings(listings) {
                 app.listings = listings.map(l => {
                   const key = (decodeURIComponent(location.hash).slice(2) + '/' + l.name.replace(/\.\w+$/, '')).replace(/^\//, '');
                   let progress;
@@ -166,7 +169,7 @@
                   }
 
                   return { ...l, progress, recentData: { key } };
-              }).sort((a, b) => multiSort(
+                }).sort((a, b) => multiSort(
                   // dirs on top
                   +(b.type === 'D') - (a.type === 'D'),
                   // finished on bottom, except for dirs
@@ -176,6 +179,12 @@
                   // by name
                   a.name.localeCompare(b.name),
                 ));
+              }
+              fetch('media/' + location.hash.replace('#', '') + '?withTimes=true').then(r => r.json()).then(listings => {
+                setListings(listings);
+              });
+              fetch('media/' + location.hash.replace('#', '')).then(r => r.json()).then(listings => {
+                setListings(listings);
 
                 if (followNext) {
                   let lastData = localStorage.getItem('lastData');
