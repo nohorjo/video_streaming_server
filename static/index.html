@@ -53,6 +53,10 @@
           class="listing"
           v-bind:class="[listing.type]"
         >
+          <div v-on:click="toggleFavourite(listing); event.stopPropagation()" style="font-size: 16pt; padding: 6px;">
+            <span v-if="isFavourite(listing)">❤️</span>
+            <span v-else>🩶</span>
+          </div>
           <img
             v-bind:src="getThumbnail(listing)"
             onerror="this.onerror=null;this.src='play.png';this.style.objectFit='contain';"
@@ -117,6 +121,20 @@
               hasAudioOnly: listing => {
                 return listing.type === 'V' && app.listings.some(l => l.type === 'A' && fileNameMatches(l, listing));
               },
+              isFavourite: listing => {
+                return app.favourites.includes(listing.recentData.key);
+              },
+              toggleFavourite: async listing => {
+                const { key } = listing.recentData;
+                if (app.favourites.includes(key)) {
+                  const index = app.favourites.indexOf(key);
+                  await Data.delete(data_key + '/' + user + '/favourites/' + index);
+                  app.favourites.splice(index, 1);
+                } else {
+                  await Data.set(data_key + '/' + user + '/favourites', key, true);
+                  app.favourites.push(key);
+                }
+              },
             },
           });
 
@@ -126,6 +144,7 @@
               listings: [],
               pathParts: [],
               recents: [],
+              favourites: [],
               user,
             },
             methods: {
@@ -138,7 +157,7 @@
 
           function getListings(followNext = true) {
             const progresses = {};
-            Data.get(data_key + '/' + user).then(({times, recents}) => {
+            Data.get(data_key + '/' + user).then(({times, recents, favourites}) => {
               recents.reverse();
 
               for (const t in times) {
@@ -155,6 +174,7 @@
               }
 
               app.recents = uniqueRecents;
+              app.favourites = favourites;
               Data.set(data_key + '/' + user + '/recents', uniqueRecents.toReversed());
             }).finally(() => {
               function setListings(listings) {
