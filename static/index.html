@@ -88,7 +88,7 @@
       <script>
         const user = localStorage.getItem('user');
         if (!user) {
-          location.pathname = '/login';
+          location.pathname = 'login';
         }
         const cookies = document.cookie.split(/;\s*/g).map(x => x.split('=')).reduce((c, [k, v]) => ({...c, [k]: v}), {});
         const { data_key } = cookies;
