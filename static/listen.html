@@ -8,6 +8,9 @@
       <link rel="stylesheet" href="style.css">
       <script src="https://muhammedhaque.co.uk/page/data-api.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+      <style>
+        canvas { display: block; margin: 20px auto; background: #222; position: absolute; }
+      </style>
     </head>
     <body onkeydown="handleOnKeyDown(event)">
       <div id="app" onmousemove="handleMouseMove()">
@@ -27,12 +30,19 @@
           </svg>
         </a>
         <audio
+          id="audio"
           controls
           v-bind:src="src"
           v-bind:class="{overscan: isTV, audioOnly}"
           autofocus
           autoplay
         ></audio>
+        <canvas
+          v-if="audioOnly"
+          id="waveform"
+          width="600"
+          height="200"
+        ></canvas>
         <span
           v-if="!audioOnly"
           class="close-button"
@@ -227,5 +237,71 @@
         }
       </script>
       <script src="https://www.youtube.com/iframe_api"></script>
+      <script>
+        const audio = document.getElementById('audio');
+        const canvas = document.getElementById('waveform');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas width to match window size
+        canvas.width = window.innerWidth;
+
+        // Create AudioContext
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
+
+        // Create source from audio element
+        const source = audioCtx.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+
+        const bufferLength = analyser.fftSize;
+        const dataArray = new Uint8Array(bufferLength);
+
+        function drawWaveform() {
+          requestAnimationFrame(drawWaveform);
+
+          analyser.getByteTimeDomainData(dataArray);
+
+          ctx.fillStyle = '#222';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#00ff00';
+          ctx.beginPath();
+
+          const sliceWidth = canvas.width / bufferLength;
+          let x = 0;
+
+          for (let i = 0; i < bufferLength; i++) {
+            const v = dataArray[i] / 128.0; // scale 0-1
+            const y = (v * canvas.height) / 2;
+
+            if (i === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+
+            x += sliceWidth;
+          }
+
+          ctx.lineTo(canvas.width, canvas.height / 2);
+          ctx.stroke();
+        }
+
+        // Start visualization when audio is played
+        audio.onplay = () => {
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          drawWaveform();
+        };
+
+        // Resize canvas dynamically
+        window.addEventListener('resize', () => {
+          canvas.width = window.innerWidth;
+        });
+      </script>
     </body>
   </html>
