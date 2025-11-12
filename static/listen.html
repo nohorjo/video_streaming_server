@@ -14,13 +14,18 @@
     </head>
     <body onkeydown="handleOnKeyDown(event)">
       <div id="app" onmousemove="handleMouseMove()">
-        <div
+        <video
           v-if="!audioOnly"
-          id="player"
-        ></div>
-        <div class="overlaybutton back" onclick="audioEl().currentTime -= 10"></div>
+          onclick="togglePlayback()"
+          ondblclick="toggleFullScreen()"
+          src="_audio_backgrounds/background.webm"
+          playsinline
+          autoplay
+          loop
+        ></video>
+        <div class="overlaybutton back" onclick="audioEl().currentTime -= 5"></div>
+        <div class="overlaybutton forward" onclick="audioEl().currentTime += 5"></div>
         <div class="overlaybutton middle" onclick="mayToggleFullScreen()"></div>
-        <div class="overlaybutton forward" onclick="audioEl().currentTime += 10"></div>
         <a class="parent-button"
           v-bind:class="{overscan: isTV}"
           v-bind:href="parent"
@@ -47,9 +52,9 @@
           v-if="!audioOnly"
           class="close-button"
           v-bind:class="{overscan: isTV}"
-          v-on:click="audioOnly = true; document.getElementById('player').remove()"
+          v-on:click="audioOnly = true"
         >&times;</span>
-        <span class="name-title" onclick="togglePlayback()">{{name}}</span>
+        <span class="name-title" onclick="audioEl()[audioEl().paused ? 'play' : 'pause']()">{{name}}</span>
       </div>
       <script>
         const user = localStorage.getItem('user');
@@ -60,8 +65,8 @@
         const { data_key } = cookies;
 
         const audioEl = () => document.querySelector('audio');
-        let videoEl;
         const searchParams = new URLSearchParams(location.search);
+        const videoEl = () => document.querySelector('video');
 
         const app = new Vue({
           el: '#app',
@@ -90,7 +95,7 @@
             });
             audioEl().addEventListener('pause', () => {
               updateTimeRemote();
-              videoEl.pauseVideo();
+              videoEl().pause();
             });
             audioEl().addEventListener('ended', () => {
               updateTimeRemote();
@@ -104,10 +109,14 @@
               location.href = `/${hash.slice(0, index)}`;
             });
             audioEl().addEventListener("play", () => {
-              videoEl.playVideo();
+              videoEl().play();
             });
             audioEl().addEventListener("seeked", () => {
               randomSeekVideo();
+            });
+            videoEl().addEventListener("loadedmetadata", () => {
+              randomSeekVideo();
+              setInterval(randomSeekVideo, 15_000);
             });
           },
         });
@@ -166,26 +175,21 @@
           } else {
             audioEl().parentElement.requestFullscreen();
           }
-          setTimeout(() => {
-            videoEl.setSize(window.innerWidth, window.innerHeight)
-          }, 200);
         }
         const seekedToTimes = [];
         function randomSeekVideo() {
-          if (videoEl.getPlayerState() !== 2) {
-            let time;
-            for (let i = 0; i < 500; i++) {
-              time = videoEl.getDuration() * Math.random();
-              if (!seekedToTimes.some(t => time > (t - 15) && time < (t + 15))) {
-                break;
-              }
-              if (i === 499) {
-                seekedToTimes.splice(0);
-              }
+          let time;
+          for (let i = 0; i < 500; i++) {
+            time = videoEl().duration * Math.random();
+            if (!seekedToTimes.some(t => time > (t - 15) && time < (t + 15))) {
+              break;
             }
-            seekedToTimes.push(time);
-            videoEl.seekTo(time);
+            if (i === 499) {
+              seekedToTimes.splice(0);
+            }
           }
+          seekedToTimes.push(time);
+          videoEl().currentTime = time;
         }
         function updateTimeRemote() {
           const percentage = audioEl().currentTime / audioEl().duration;
@@ -200,44 +204,7 @@
           el.classList.add('hovering');
           hoverTimeout = setTimeout(() => el.classList.remove('hovering'), 7000);
         }
-
-        function onYouTubeIframeAPIReady() {
-          videoEl = new YT.Player('player', {
-            height: window.innerHeight,
-            width: window.innerWidth,
-            videoId: 'hXoua0T7kQQ',
-            playerVars: {
-              autoplay: 1,
-              controls: 0,
-              disablekb: 1,
-              enablejsapi: 1,
-              fs: 0,
-              loop: 1,
-              playsinline: 1,
-              rel: 0,
-              start: Math.random() * 15000,
-            },
-            events: {
-              onReady: () => {
-                randomSeekVideo();
-                setInterval(randomSeekVideo, 15_000);
-                videoEl.playVideo();
-              },
-              onStateChange: event => {
-                switch (event.data) {
-                  case YT.PlayerState.PLAYING:
-                    audioEl().play();
-                    break;
-                  case YT.PlayerState.PAUSED:
-                    audioEl().pause();
-                    break;
-                }
-              },
-            }
-          });
-        }
       </script>
-      <script src="https://www.youtube.com/iframe_api"></script>
       <script>
         const audio = document.getElementById('audio');
         const canvas = document.getElementById('waveform');

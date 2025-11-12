@@ -18,7 +18,7 @@ body {
 #app:fullscreen:not(.hovering) {
   cursor: none;
 }
-#app:fullscreen:not(.hovering) :not(iframe, .overlaybutton) {
+#app:fullscreen:not(.hovering) :not(video, .overlaybutton) {
   display: none;
 }
 .crumbs {
@@ -118,11 +118,6 @@ audio {
   bottom: 0;
   z-index: 1;
 }
-iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
 video.overscan {
   padding: 0.8rem;
 }
@@ -150,7 +145,7 @@ audio.overscan {
 .overlaybutton {
   position: absolute;
   top: 0;
-  width: 30%;
+  width: 27%;
   height: 100%;
 }
 .overlaybutton.back {
