@@ -145,6 +145,7 @@
 
         function togglePlayback() {
           audioEl()[audioEl().paused ? 'play' : 'pause']();
+          navigator.wakeLock.request("screen");
         }
         let clickTimeout;
         function mayToggleFullScreen(event) {
