@@ -109,6 +109,7 @@
               location.href = `/${hash.slice(0, index)}`;
             });
             audioEl().addEventListener("play", () => {
+              navigator.wakeLock.request("screen");
               videoEl().play();
             });
             audioEl().addEventListener("seeked", () => {
@@ -154,7 +155,6 @@
 
         function togglePlayback() {
           audioEl()[audioEl().paused ? 'play' : 'pause']();
-          navigator.wakeLock.request("screen");
         }
         let clickTimeout;
         function mayToggleFullScreen(event) {
