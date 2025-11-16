@@ -92,7 +92,7 @@
               localStorage.setItem('lastData', JSON.stringify({
                 name: decodeURIComponent(hash.slice(index + 1)),
                 audioOnly: app.audioOnly,
-                random: searchParams.get('random') === 'true',
+                random: searchParams.get('random'),
               }));
               location.href = `/${hash.slice(0, index)}`;
             });

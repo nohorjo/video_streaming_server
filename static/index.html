@@ -39,6 +39,8 @@
           </a>
           <span v-for="c in pathParts"> / <a v-bind:href="'#/' + c.path">{{c.name}}</a></span>
           <button v-if="listings.some(l => l.type !== 'D')" v-on:click="openRandomListing()">Random</button>
+          <button v-if="listings.some(l => l.type === 'V')" v-on:click="openRandomListing('V')">Random Video</button>
+          <button v-if="listings.some(l => l.type === 'A')" v-on:click="openRandomListing('A')">Random Audio</button>
         </div>
         <listing-component
           v-for="l in listings"
@@ -212,7 +214,7 @@
                   if (lastData) {
                     lastData = JSON.parse(lastData);
                     if (lastData.random) {
-                      openRandomListing();
+                      openRandomListing(lastData.random);
                     } else {
                       const next = listings[listings.findIndex(l => l.name === lastData.name) + 1];
                       if (next && next.type !== 'D') {
@@ -266,12 +268,19 @@
             location.href = page;
           }
 
-          function openRandomListing() {
+          function openRandomListing(type = '?') {
             let listing;
-            do {
+            for (let i = 0; i < app.listings.length; i++) {
               listing = app.listings[Math.round(Math.random() * app.listings.length)];
-            } while (listing.type === 'D');
-            openListing(listing, false, true);
+              if (listing.type !== 'D' && (type === '?' || type === listing.type)) {
+                break;
+              }
+            }
+            if (listing) {
+              openListing(listing, type === 'A', type);
+            } else {
+              alert('Not found');
+            }
           }
 
           window.addEventListener("hashchange", () => location.reload());
