@@ -251,10 +251,10 @@
                 case 'D':
                   break;
                 case 'V':
-                  page = `/watch?random=${random}${page}`;
+                  page = `/watch?random=${random || ''}${page}`;
                   break;
                 case 'A':
-                  page = `/listen?audioOnly=${audioOnly}&random=${random}${page}`;
+                  page = `/listen?audioOnly=${audioOnly}&random=${random || ''}${page}`;
                   break;
               }
               listing.recentData.page = page;
