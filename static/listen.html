@@ -54,7 +54,13 @@
           v-bind:class="{overscan: isTV}"
           v-on:click="audioOnly = true"
         >&times;</span>
-        <span class="name-title" onclick="audioEl()[audioEl().paused ? 'play' : 'pause']()">{{name}}</span>
+        <span class="name-title">
+          <span onclick="audioEl()[audioEl().paused ? 'play' : 'pause']()">{{name}}</span>
+          <span v-on:click="toggleFavourite()">
+            <span v-if="isFavourite">❤️</span>
+            <span v-else>🩶</span>
+          </span>
+        </span>
       </div>
       <script>
         const user = localStorage.getItem('user');
@@ -68,6 +74,9 @@
         const searchParams = new URLSearchParams(location.search);
         const videoEl = () => document.querySelector('video');
 
+        let favourites = [];
+        const favKey = decodeURIComponent(location.hash.slice(2, -4));
+
         const app = new Vue({
           el: '#app',
           data: {
@@ -76,6 +85,21 @@
             name: decodeURIComponent(location.hash.split('/').reverse()[0]).replace(/\.\w+$/, ''),
             isTV: navigator.userAgent.includes('Silk'),
             audioOnly: searchParams.get('audioOnly') === 'true',
+            isFavourite: false,
+          },
+          methods: {
+            toggleFavourite: async () => {
+              if (app.isFavourite) {
+                const index = favourites.indexOf(favKey);
+                await Data.delete(data_key + '/' + user + '/favourites/' + index);
+                favourites.splice(index, 1);
+                app.isFavourite = false;
+              } else {
+                await Data.set(data_key + '/' + user + '/favourites', favKey, { push: true });
+                app.isFavourite = true;
+                favourites.push(favKey);
+              }
+            },
           },
           mounted: () => {
             audioEl().addEventListener("loadedmetadata", () => {
@@ -85,6 +109,10 @@
                     audioEl().currentTime = (r || 0) * audioEl().duration;
                   }
                 });
+              Data.get(data_key + '/' + user + '/favourites/').then(r => {
+                favourites = r;
+                app.isFavourite = r.includes(favKey);
+              });
             });
             let updateTimeout;
             audioEl().addEventListener("timeupdate", () => {
