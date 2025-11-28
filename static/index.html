@@ -269,13 +269,17 @@
           }
 
           function openRandomListing(type = '?') {
-            let listing;
+            let listing, alreadyFinishedListing;
             for (let i = 0; i < app.listings.length; i++) {
               listing = app.listings[Math.round(Math.random() * app.listings.length)];
               if (listing.type !== 'D' && (type === '?' || type === listing.type)) {
-                break;
+                if (listing.progress < 99) {
+                  break;
+                }
+                alreadyFinishedListing = listing;
               }
             }
+            listing = listing || alreadyFinishedListing;
             if (listing) {
               openListing(listing, type === 'A', type);
             } else {
